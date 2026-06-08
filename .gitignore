@@ -21,3 +21,9 @@ coverage/
 
 # Temporary smoke logs
 api-smoke.*.log
+
+# Local runtimes and downloaded installers
+.local/
+.tmp-postgis/
+postgis-bundle-*.exe
+postgis-bundle-*.zip

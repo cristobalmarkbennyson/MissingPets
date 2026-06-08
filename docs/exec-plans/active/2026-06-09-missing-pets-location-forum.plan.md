@@ -87,12 +87,12 @@ Implement data model and persistence for posts, photos, comments, messages, mana
 
 ### Acceptance Criteria
 
-- [ ] `AC-PLN-005` Implement database schema for `posts`, `post_photos`, `comments`, `messages`, `management_tokens`, and `abuse_reports`. Traces to `ARC-DATA-001`, `ARC-DATA-002`, `ARC-DATA-003`, `ARC-DATA-004`, `ARC-DATA-005`, `ARC-DATA-006`.
-- [ ] `AC-PLN-006` Implement precise last-seen coordinate storage with PostGIS geography/point support and indexes suitable for radius search. Traces to `ARC-GEO-001`, `ARC-GEO-002`, `DATA-003`.
-- [ ] `AC-PLN-007` Implement public approximate location fields or mapping service output so APIs can avoid exposing precise coordinates by default. Traces to `ARC-GEO-003`, `DEC-003`, `DEC-UX-005`.
-- [ ] `AC-PLN-008` Implement management token generation, hashing, verification, and persistence. Traces to `ARC-SEC-002`, `DEC-002`, `UX-009`.
-- [ ] `AC-PLN-009` Implement domain validation for required pet photo, pet name, pet type, defining features, and last-seen location. Traces to `F-006`, `F-007`, `DATA-001`, `DATA-002`.
-- [ ] `AC-PLN-010` Add NUnit unit and integration tests for validators, token behavior, schema persistence, and radius search. Traces to `TEST-001`, `TEST-002`.
+- [x] `AC-PLN-005` Implement database schema for `posts`, `post_photos`, `comments`, `messages`, `management_tokens`, and `abuse_reports`. Traces to `ARC-DATA-001`, `ARC-DATA-002`, `ARC-DATA-003`, `ARC-DATA-004`, `ARC-DATA-005`, `ARC-DATA-006`.
+- [x] `AC-PLN-006` Implement precise last-seen coordinate storage with PostGIS geography/point support and indexes suitable for radius search. Traces to `ARC-GEO-001`, `ARC-GEO-002`, `DATA-003`.
+- [x] `AC-PLN-007` Implement public approximate location fields or mapping service output so APIs can avoid exposing precise coordinates by default. Traces to `ARC-GEO-003`, `DEC-003`, `DEC-UX-005`.
+- [x] `AC-PLN-008` Implement management token generation, hashing, verification, and persistence. Traces to `ARC-SEC-002`, `DEC-002`, `UX-009`.
+- [x] `AC-PLN-009` Implement domain validation for required pet photo, pet name, pet type, defining features, and last-seen location. Traces to `F-006`, `F-007`, `DATA-001`, `DATA-002`.
+- [x] `AC-PLN-010` Add NUnit unit and integration tests for validators, token behavior, schema persistence, and radius search. Traces to `TEST-001`, `TEST-002`.
 
 ### Verification
 
@@ -120,14 +120,14 @@ Implement the approved API contracts and photo storage abstraction. Include vali
 
 ### Acceptance Criteria
 
-- [ ] `AC-PLN-011` Implement `GET /api/posts` nearby feed search with `lat`, `lng`, `radiusKm`, `type`, `status`, and `sort` query parameters. Traces to `INT-API-001`, `F-001`, `F-004`, `F-013`, `UX-001`, `UX-003`.
-- [ ] `AC-PLN-012` Implement `POST /api/posts` anonymous post creation with required photo upload references and management token response. Traces to `INT-API-002`, `F-005`, `F-006`, `F-007`, `F-008`, `UX-004`, `UX-005`.
-- [ ] `AC-PLN-013` Implement photo upload/storage API or presigned/local upload flow with file type, size, and count limits. Traces to `ARC-004`, `ARC-SEC-004`, `DATA-002`.
-- [ ] `AC-PLN-014` Implement `GET /api/posts/{postId}` with full detail, photos, approximate public map data, status, and distance when viewer coordinates are supplied. Traces to `INT-API-003`, `UX-006`.
-- [ ] `AC-PLN-015` Implement comments endpoints for listing and anonymous submission. Traces to `INT-API-004`, `F-010`, `UX-007`.
-- [ ] `AC-PLN-016` Implement message/contact form endpoint as post-attached submissions, not real-time chat. Traces to `INT-API-005`, `F-011`, `DEC-UX-003`, `UX-008`.
-- [ ] `AC-PLN-017` Implement anonymous management endpoints for token-gated status changes. Traces to `INT-API-006`, `F-012`, `WF-007`, `UX-009`.
-- [ ] `AC-PLN-018` Implement abuse report endpoint for posts, comments, and messages. Traces to `INT-API-007`, `F-014`, `UX-010`.
+- [x] `AC-PLN-011` Implement `GET /api/posts` nearby feed search with `lat`, `lng`, `radiusKm`, `type`, `status`, and `sort` query parameters. Traces to `INT-API-001`, `F-001`, `F-004`, `F-013`, `UX-001`, `UX-003`.
+- [x] `AC-PLN-012` Implement `POST /api/posts` anonymous post creation with required photo upload references and management token response. Traces to `INT-API-002`, `F-005`, `F-006`, `F-007`, `F-008`, `UX-004`, `UX-005`.
+- [x] `AC-PLN-013` Implement photo upload/storage API or presigned/local upload flow with file type, size, and count limits. Traces to `ARC-004`, `ARC-SEC-004`, `DATA-002`.
+- [x] `AC-PLN-014` Implement `GET /api/posts/{postId}` with full detail, photos, approximate public map data, status, and distance when viewer coordinates are supplied. Traces to `INT-API-003`, `UX-006`.
+- [x] `AC-PLN-015` Implement comments endpoints for listing and anonymous submission. Traces to `INT-API-004`, `F-010`, `UX-007`.
+- [x] `AC-PLN-016` Implement message/contact form endpoint as post-attached submissions, not real-time chat. Traces to `INT-API-005`, `F-011`, `DEC-UX-003`, `UX-008`.
+- [x] `AC-PLN-017` Implement anonymous management endpoints for token-gated status changes. Traces to `INT-API-006`, `F-012`, `WF-007`, `UX-009`.
+- [x] `AC-PLN-018` Implement abuse report endpoint for posts, comments, and messages. Traces to `INT-API-007`, `F-014`, `UX-010`.
 
 ### Verification
 
@@ -164,16 +164,16 @@ Implement the approved API contracts and photo storage abstraction. Include vali
 
 ### Acceptance Criteria
 
-- [ ] `AC-PLN-019` Implement nearby feed route `/` with feed cards, approximate area, distance, status, primary photo, and create-post entry; it must not contain full create, comments, messaging, or moderation queue. Traces to `UX-001`, `INT-UI-001`, `F-001`.
-- [ ] `AC-PLN-020` Implement location permission overlay/manual fallback on `/`, including denied/unsupported states and manual location confirmation; it must not require accounts. Traces to `UX-002`, `F-002`, `F-003`, `CON-001`.
-- [ ] `AC-PLN-021` Implement search/filter controls with `10 km` default radius and configurable radius/type/status/recency behavior. Traces to `UX-003`, `F-004`, `F-013`.
-- [ ] `AC-PLN-022` Implement `/posts/new` full-page create flow with required photos, pet details, privacy note, validation states, publish success, and management-link/code display; it must not be a modal. Traces to `UX-004`, `F-005`, `F-006`, `F-007`.
-- [ ] `AC-PLN-023` Implement Google Maps last-seen pin picker inside create flow with place search, draggable/selected pin, and map API error state. Traces to `UX-005`, `F-008`, `ARC-005`.
-- [ ] `AC-PLN-024` Implement `/posts/:postId` detail route with photo gallery, pet details, approximate map area, status, comments entry, message entry, and report action. Traces to `UX-006`, `INT-UI-003`.
-- [ ] `AC-PLN-025` Implement comments section as embedded post-detail content with empty/loading/error/submitting states. Traces to `UX-007`, `F-010`.
-- [ ] `AC-PLN-026` Implement message/contact form as modal or drawer, not real-time chat and not a global inbox. Traces to `UX-008`, `F-011`, `DEC-UX-003`.
-- [ ] `AC-PLN-027` Implement `/posts/:postId/manage` token/code-based anonymous management route for status changes. Traces to `UX-009`, `F-012`.
-- [ ] `AC-PLN-028` Implement report-abuse modal/drawer for posts, comments, and message contexts; it must not include a full moderation queue. Traces to `UX-010`, `F-014`.
+- [x] `AC-PLN-019` Implement nearby feed route `/` with feed cards, approximate area, distance, status, primary photo, and create-post entry; it must not contain full create, comments, messaging, or moderation queue. Traces to `UX-001`, `INT-UI-001`, `F-001`.
+- [x] `AC-PLN-020` Implement location permission overlay/manual fallback on `/`, including denied/unsupported states and manual location confirmation; it must not require accounts. Traces to `UX-002`, `F-002`, `F-003`, `CON-001`.
+- [x] `AC-PLN-021` Implement search/filter controls with `10 km` default radius and configurable radius/type/status/recency behavior. Traces to `UX-003`, `F-004`, `F-013`.
+- [x] `AC-PLN-022` Implement `/posts/new` full-page create flow with required photos, pet details, privacy note, validation states, publish success, and management-link/code display; it must not be a modal. Traces to `UX-004`, `F-005`, `F-006`, `F-007`.
+- [x] `AC-PLN-023` Implement Google Maps last-seen pin picker inside create flow with place search, draggable/selected pin, and map API error state. Traces to `UX-005`, `F-008`, `ARC-005`.
+- [x] `AC-PLN-024` Implement `/posts/:postId` detail route with photo gallery, pet details, approximate map area, status, comments entry, message entry, and report action. Traces to `UX-006`, `INT-UI-003`.
+- [x] `AC-PLN-025` Implement comments section as embedded post-detail content with empty/loading/error/submitting states. Traces to `UX-007`, `F-010`.
+- [x] `AC-PLN-026` Implement message/contact form as modal or drawer, not real-time chat and not a global inbox. Traces to `UX-008`, `F-011`, `DEC-UX-003`.
+- [x] `AC-PLN-027` Implement `/posts/:postId/manage` token/code-based anonymous management route for status changes. Traces to `UX-009`, `F-012`.
+- [x] `AC-PLN-028` Implement report-abuse modal/drawer for posts, comments, and message contexts; it must not include a full moderation queue. Traces to `UX-010`, `F-014`.
 
 ### Verification
 

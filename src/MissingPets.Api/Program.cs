@@ -1,4 +1,9 @@
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using MissingPets.Api.Api;
+using MissingPets.Api.Data;
+using MissingPets.Api.Domain;
+using MissingPets.Api.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +21,15 @@ builder.Services.AddOptions<CorsOptions>()
     .Bind(builder.Configuration.GetSection(CorsOptions.SectionName));
 builder.Services.AddOptions<ModerationOptions>()
     .Bind(builder.Configuration.GetSection(ModerationOptions.SectionName));
+builder.Services.AddDbContext<MissingPetsDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("MissingPetsDb"),
+        npgsql => npgsql.UseNetTopologySuite()));
+builder.Services.AddScoped<NearbyPostQuery>();
+builder.Services.AddSingleton<PetPostValidator>();
+builder.Services.AddSingleton<ManagementTokenService>();
+builder.Services.AddSingleton<PublicLocationService>();
+builder.Services.AddSingleton<IPhotoStorageService, LocalPhotoStorageService>();
 
 var app = builder.Build();
 
@@ -51,6 +65,7 @@ app.MapGet("/health", (
 })
 .WithName("Health")
 .WithOpenApi();
+app.MapMissingPetsApi();
 
 app.Run();
 

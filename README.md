@@ -2,7 +2,7 @@
 
 MissingPets is a web-first missing-pet forum planned around location-aware nearby posts, anonymous posting, pet photos, comments, simple post-attached messaging, and Google Maps last-seen pinning.
 
-The current implementation is Phase 1 scaffold only. Later phases add persistence, APIs, UX surfaces, Google Maps, photo storage, and full verification.
+The current implementation has completed Phase 1 scaffold and Phase 2 database/domain foundation. Later phases add APIs, UX surfaces, Google Maps, photo storage, and full verification.
 
 ## Project Layout
 
@@ -16,7 +16,7 @@ The current implementation is Phase 1 scaffold only. Later phases add persistenc
 
 - .NET SDK 8.0 or compatible.
 - Node.js LTS with npm.
-- PostgreSQL with PostGIS is planned for later phases and is not required for Phase 1 scaffold verification.
+- PostgreSQL with PostGIS is required for Phase 2 and later database verification.
 
 ## Environment Variables
 
@@ -30,7 +30,29 @@ The scaffold includes placeholders for:
 - `Cors__AllowedOrigins`
 - `Moderation__RateLimitPolicy`
 
-Local defaults are documented in `src/MissingPets.Api/appsettings.json`.
+Local defaults are documented in `src/MissingPets.Api/appsettings.json`. The current local development connection targets the workspace-local PostgreSQL/PostGIS runtime on port `55432`:
+
+```text
+Host=localhost;Port=55432;Database=missingpets;Username=postgres
+```
+
+## Local PostgreSQL/PostGIS Runtime
+
+During Phase 2 execution, PostgreSQL 17 was installed and a workspace-local copy was created at `.local/postgresql17` with the OSGeo PostGIS 3.6 bundle overlaid. The `.local/` directory is ignored by git.
+
+Start the local database:
+
+```powershell
+$pg=(Resolve-Path '.local\postgresql17').Path
+& (Join-Path $pg 'bin\pg_ctl.exe') -D .local\pgdata -o "-p 55432" -l .local\postgres.log start
+```
+
+Stop it:
+
+```powershell
+$pg=(Resolve-Path '.local\postgresql17').Path
+& (Join-Path $pg 'bin\pg_ctl.exe') -D .local\pgdata stop
+```
 
 ## Run The API
 
