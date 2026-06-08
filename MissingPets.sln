@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA6031CD-18B3-4BDD-8A9E-1CE5222CE798}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissingPets.Api", "src\MissingPets.Api\MissingPets.Api.csproj", "{E7550609-D787-4398-AE61-3BBCC73AF6A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissingPets.Api.Tests", "src\MissingPets.Api.Tests\MissingPets.Api.Tests.csproj", "{ED487AE7-1DE6-49DE-BCBD-764BD4371697}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E7550609-D787-4398-AE61-3BBCC73AF6A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7550609-D787-4398-AE61-3BBCC73AF6A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7550609-D787-4398-AE61-3BBCC73AF6A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7550609-D787-4398-AE61-3BBCC73AF6A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED487AE7-1DE6-49DE-BCBD-764BD4371697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED487AE7-1DE6-49DE-BCBD-764BD4371697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED487AE7-1DE6-49DE-BCBD-764BD4371697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED487AE7-1DE6-49DE-BCBD-764BD4371697}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E7550609-D787-4398-AE61-3BBCC73AF6A1} = {DA6031CD-18B3-4BDD-8A9E-1CE5222CE798}
+		{ED487AE7-1DE6-49DE-BCBD-764BD4371697} = {DA6031CD-18B3-4BDD-8A9E-1CE5222CE798}
+	EndGlobalSection
+EndGlobal

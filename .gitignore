@@ -1,0 +1,23 @@
+# Build outputs
+bin/
+obj/
+dist/
+
+# Node dependencies and package manager noise
+node_modules/
+npm-debug.log*
+
+# Local environment and editor files
+.env
+.env.*
+.vs/
+.vscode/
+
+# Test and coverage output
+TestResults/
+playwright-report/
+test-results/
+coverage/
+
+# Temporary smoke logs
+api-smoke.*.log

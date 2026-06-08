@@ -1,0 +1,92 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  padding: 40px;
+  color: #17202c;
+  background: #eef3f4;
+}
+
+.scaffold-panel,
+.route-card {
+  border: 1px solid #d7dee6;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(23, 32, 44, 0.05);
+}
+
+.scaffold-panel {
+  max-width: 920px;
+  padding: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+p {
+  color: #566273;
+  line-height: 1.5;
+}
+
+.active-route {
+  display: inline-grid;
+  gap: 4px;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #14532d;
+}
+
+.active-route span {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.route-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.route-card {
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+code {
+  color: #115e59;
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .app-shell {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+}

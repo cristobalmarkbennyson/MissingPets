@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MissingPets Prototype</title>
+  <style>
+    :root {
+      --ink: #18202c;
+      --muted: #5d6877;
+      --line: #d9dee7;
+      --soft: #f4f7fa;
+      --panel: #ffffff;
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --found: #166534;
+      --shadow: 0 12px 28px rgba(24, 32, 44, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #edf2f4;
+    }
+    button, input, select, textarea { font: inherit; }
+    button {
+      border: 0;
+      border-radius: 6px;
+      background: var(--brand);
+      color: white;
+      min-height: 40px;
+      padding: 0 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.secondary { background: #e6eef0; color: var(--ink); }
+    button.ghost { background: transparent; color: var(--brand-dark); border: 1px solid var(--line); }
+    button.danger { background: var(--danger); }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(15, 118, 110, .28);
+      outline-offset: 2px;
+    }
+    input, select, textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      background: white;
+      color: var(--ink);
+    }
+    textarea { resize: vertical; min-height: 92px; }
+    .app-shell { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+    .topbar {
+      max-width: 1180px;
+      margin: 0 auto;
+      min-height: 64px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 20px; }
+    .paw { width: 34px; height: 34px; border-radius: 6px; background: var(--brand); display: grid; place-items: center; color: white; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    main { max-width: 1180px; width: 100%; margin: 0 auto; padding: 24px 20px 42px; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.3fr) repeat(4, minmax(120px, .55fr));
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+    .field label { display: block; font-size: 12px; color: var(--muted); font-weight: 800; margin-bottom: 5px; }
+    .feed-layout { display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-items: start; }
+    .feed-list { display: grid; gap: 12px; }
+    .card, .side-panel, .form-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(24, 32, 44, .04);
+    }
+    .pet-card {
+      display: grid;
+      grid-template-columns: 148px 1fr;
+      gap: 14px;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .pet-card:hover { border-color: #9db8b4; }
+    .pet-img {
+      min-height: 132px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #cbd5e1;
+      position: relative;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,.9);
+      font-weight: 900;
+      isolation: isolate;
+    }
+    .pet-img::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 34% 32%, rgba(255,255,255,.85) 0 10%, transparent 11%),
+        radial-gradient(circle at 62% 38%, rgba(255,255,255,.68) 0 8%, transparent 9%),
+        radial-gradient(circle at 48% 60%, rgba(0,0,0,.22) 0 16%, transparent 17%),
+        linear-gradient(135deg, var(--photo-a), var(--photo-b));
+      z-index: -1;
+    }
+    .pet-img span { background: rgba(0,0,0,.34); padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+    .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 28px; line-height: 1.1; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+    p { margin: 0; color: var(--muted); line-height: 1.45; }
+    .meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 0 9px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .chip.missing { background: #fff7ed; color: var(--warn); }
+    .chip.found { background: #ecfdf5; color: var(--found); }
+    .side-panel { padding: 16px; display: grid; gap: 14px; position: sticky; top: 82px; }
+    .map {
+      min-height: 220px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.35) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.35) 1px, transparent 1px),
+        linear-gradient(135deg, #dbeafe, #d1fae5 45%, #fef3c7);
+      background-size: 34px 34px, 34px 34px, cover;
+    }
+    .map::before, .map::after {
+      content: "";
+      position: absolute;
+      background: rgba(24, 32, 44, .16);
+      border-radius: 999px;
+    }
+    .map::before { width: 82%; height: 12px; left: -8%; top: 42%; transform: rotate(-12deg); }
+    .map::after { width: 58%; height: 10px; right: -10%; top: 66%; transform: rotate(24deg); }
+    .pin {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50% 50% 50% 0;
+      background: var(--danger);
+      transform: rotate(-45deg);
+      left: var(--x, 52%);
+      top: var(--y, 44%);
+      box-shadow: 0 0 0 12px rgba(185,28,28,.12), 0 0 0 28px rgba(185,28,28,.08);
+    }
+    .pin::after { content: ""; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: white; left: 6px; top: 6px; }
+    .route { display: none; }
+    .route.active { display: block; }
+    .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+    .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .gallery .pet-img { min-height: 220px; }
+    .detail-main, .comments, .form-panel { padding: 18px; display: grid; gap: 16px; }
+    .comment { padding: 12px; background: var(--soft); border-radius: 8px; display: grid; gap: 6px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-grid .wide { grid-column: 1 / -1; }
+    .upload-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .upload-slot {
+      min-height: 118px;
+      border: 1px dashed #9aa7b6;
+      border-radius: 8px;
+      background: var(--soft);
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 800;
+      text-align: center;
+      padding: 12px;
+    }
+    .success-box, .note {
+      padding: 12px;
+      border-radius: 8px;
+      background: #ecfdf5;
+      color: #14532d;
+      border: 1px solid #bbf7d0;
+    }
+    .note { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      background: rgba(15, 23, 42, .48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.active { display: flex; }
+    .modal {
+      width: min(520px, 100%);
+      max-width: 100%;
+      min-width: 0;
+      background: white;
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 14px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .modal-actions button { min-width: 0; }
+    .hidden { display: none !important; }
+    .empty { padding: 28px; text-align: center; }
+    .error-text { color: var(--danger); font-weight: 800; font-size: 13px; }
+
+    @media (max-width: 860px) {
+      .topbar { align-items: flex-start; padding: 12px 16px; flex-direction: column; }
+      main { padding: 16px; }
+      .toolbar, .feed-layout, .detail-grid, .form-grid { grid-template-columns: 1fr; }
+      .side-panel { position: static; }
+      .pet-card { grid-template-columns: 116px 1fr; }
+      .pet-img { min-height: 114px; }
+      .gallery { grid-template-columns: 1fr; }
+      .upload-strip { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      .modal-backdrop { justify-content: flex-start; padding: 16px 32px 16px 16px; }
+      .modal { width: 100%; padding: 16px; overflow: hidden; }
+      .modal p { overflow-wrap: anywhere; }
+      .modal-actions { display: grid; grid-template-columns: 1fr; }
+      .modal-actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="topbar">
+        <div class="brand"><div class="paw">MP</div><span>MissingPets</span></div>
+        <div class="nav-actions">
+          <button class="ghost" data-action="openLocation">Change location</button>
+          <button data-route="new">Post missing pet</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="feed" class="route active" aria-label="Nearby missing pets feed">
+        <div class="toolbar" aria-label="Search and filters">
+          <div class="field"><label for="place">Search location</label><input id="place" value="Makati, Metro Manila"></div>
+          <div class="field"><label for="radius">Radius</label><select id="radius"><option>5 km</option><option selected>10 km</option><option>25 km</option><option>50 km</option></select></div>
+          <div class="field"><label for="type">Pet type</label><select id="type"><option>Any</option><option>Dog</option><option>Cat</option><option>Bird</option></select></div>
+          <div class="field"><label for="status">Status</label><select id="status"><option>Missing</option><option>Found</option><option>Any</option></select></div>
+          <div class="field"><label for="sort">Sort</label><select id="sort"><option>Nearest</option><option>Newest</option></select></div>
+        </div>
+
+        <div class="feed-layout">
+          <div>
+            <div class="card empty hidden" id="emptyState">
+              <h2>No matching nearby posts</h2>
+              <p>Try a wider radius or a different pet type.</p>
+            </div>
+            <div class="feed-list" id="feedList"></div>
+          </div>
+          <aside class="side-panel">
+            <h2>Near Makati</h2>
+            <p>Showing active reports within the selected radius. Public maps show approximate last-seen areas for privacy.</p>
+            <div class="map" aria-label="Approximate nearby map"><span class="pin"></span></div>
+            <button class="secondary" data-action="openLocation">Use another location</button>
+          </aside>
+        </div>
+      </section>
+
+      <section id="detail" class="route" aria-label="Post detail"></section>
+
+      <section id="new" class="route" aria-label="Create missing pet post">
+        <div class="form-panel">
+          <div>
+            <h1>Create missing-pet post</h1>
+            <p>Anonymous posting is supported. Save the private management code shown after publishing.</p>
+          </div>
+          <div class="upload-strip">
+            <div class="upload-slot">Required pet photo</div>
+            <div class="upload-slot">Add another photo</div>
+            <div class="upload-slot">Add another photo</div>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Pet name</label><input id="petName" placeholder="Example: Mochi"></div>
+            <div class="field"><label>Pet type</label><select id="petType"><option>Dog</option><option>Cat</option><option>Bird</option><option>Other</option></select></div>
+            <div class="field wide"><label>Accessories</label><input id="petAccessories" placeholder="Blue collar, bell, harness"></div>
+            <div class="field wide"><label>Defining features</label><textarea id="petFeatures" placeholder="White paws, scar near left ear, very shy"></textarea></div>
+            <div class="field wide"><label>Last seen location</label><input id="lastSeen" value="Poblacion, Makati"></div>
+          </div>
+          <div class="map" id="pinMap" aria-label="Google Maps pin picker mock"><span class="pin" style="--x:48%;--y:38%"></span></div>
+          <div class="note">Prototype note: this represents the Google Maps pin picker. Exact coordinates are saved for search, while the public map shows an approximate area.</div>
+          <div id="postError" class="error-text hidden">Add a pet name and defining features before publishing.</div>
+          <div class="modal-actions">
+            <button class="secondary" data-route="feed">Cancel</button>
+            <button data-action="publish">Publish post</button>
+          </div>
+          <div id="publishSuccess" class="success-box hidden">
+            Post published. Private management code: MP-7K4Q. Use the generated link to mark this pet found later.
+          </div>
+        </div>
+      </section>
+
+      <section id="manage" class="route" aria-label="Anonymous post management">
+        <div class="form-panel">
+          <h1>Manage Luna's report</h1>
+          <p>This page is available only through the private management link or code created after posting.</p>
+          <div class="success-box">Management token accepted.</div>
+          <div class="field"><label>Status</label><select id="manageStatus"><option>Missing</option><option>Found</option></select></div>
+          <div class="modal-actions">
+            <button class="secondary" data-route="detail">View public post</button>
+            <button data-action="saveManage">Save status</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop active" id="locationModal" role="dialog" aria-modal="true" aria-label="Location permission">
+    <div class="modal">
+      <h2>Find missing pets near you</h2>
+      <p>Allow access or choose manually.</p>
+      <div class="field"><label>Manual location</label><input id="manualLocation" value="Makati, Metro Manila"></div>
+      <div class="modal-actions">
+        <button class="secondary" data-action="manualLocation">Use manual location</button>
+        <button data-action="allowLocation">Allow location</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="messageModal" role="dialog" aria-modal="true" aria-label="Message poster">
+    <div class="modal">
+      <h2>Message the poster</h2>
+      <p>Your message is sent about this post only. This is not real-time chat.</p>
+      <div class="field"><label>Your contact info</label><input placeholder="Phone or email"></div>
+      <div class="field"><label>Message</label><textarea placeholder="I may have seen this pet near..."></textarea></div>
+      <div class="modal-actions">
+        <button class="secondary" data-action="closeModals">Cancel</button>
+        <button data-action="sendMessage">Send message</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="reportModal" role="dialog" aria-modal="true" aria-label="Report abuse">
+    <div class="modal">
+      <h2>Report content</h2>
+      <div class="field"><label>Reason</label><select><option>Spam or fake post</option><option>Unsafe content</option><option>Harassment</option><option>Inappropriate photo</option></select></div>
+      <div class="field"><label>Details</label><textarea placeholder="Add context for the site operator"></textarea></div>
+      <div class="modal-actions">
+        <button class="secondary" data-action="closeModals">Cancel</button>
+        <button class="danger" data-action="submitReport">Submit report</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const posts = [
+      { id: 1, name: "Luna", type: "Dog", status: "Missing", distance: 2.4, area: "Poblacion, Makati", time: "2h ago", features: "Cream Shih Tzu with pink collar and small limp.", photo: ["#0f766e", "#f59e0b"] },
+      { id: 2, name: "Miso", type: "Cat", status: "Missing", distance: 4.7, area: "BGC, Taguig", time: "5h ago", features: "Gray tabby, yellow eyes, missing tip on right ear.", photo: ["#334155", "#38bdf8"] },
+      { id: 3, name: "Kiwi", type: "Bird", status: "Missing", distance: 8.1, area: "San Antonio, Makati", time: "Yesterday", features: "Green lovebird with orange face and silver leg band.", photo: ["#16a34a", "#f97316"] },
+      { id: 4, name: "Bruno", type: "Dog", status: "Found", distance: 9.8, area: "Guadalupe Viejo", time: "2d ago", features: "Brown aspin, red harness, very friendly.", photo: ["#92400e", "#facc15"] }
+    ];
+    const comments = [
+      "Saw a similar dog near Kalayaan Ave around 4 PM.",
+      "Please check with the guard desk at the nearby condo."
+    ];
+
+    function photoStyle(post) {
+      return `--photo-a:${post.photo[0]};--photo-b:${post.photo[1]}`;
+    }
+
+    function renderFeed() {
+      const radius = parseInt(document.getElementById("radius").value, 10);
+      const type = document.getElementById("type").value;
+      const status = document.getElementById("status").value;
+      let filtered = posts.filter(p => p.distance <= radius);
+      if (type !== "Any") filtered = filtered.filter(p => p.type === type);
+      if (status !== "Any") filtered = filtered.filter(p => p.status === status);
+      if (document.getElementById("sort").value === "Newest") filtered = filtered.slice().reverse();
+      document.getElementById("emptyState").classList.toggle("hidden", filtered.length > 0);
+      document.getElementById("feedList").innerHTML = filtered.map(p => `
+        <article class="card pet-card" data-open-post="${p.id}" aria-label="${p.name} missing pet post">
+          <div class="pet-img" style="${photoStyle(p)}"><span>${p.type} photo</span></div>
+          <div>
+            <div class="card-head">
+              <h2>${p.name}</h2>
+              <span class="chip ${p.status.toLowerCase()}">${p.status}</span>
+            </div>
+            <div class="meta">
+              <span class="chip">${p.type}</span>
+              <span class="chip">${p.distance} km away</span>
+              <span class="chip">${p.time}</span>
+            </div>
+            <p><strong>Last seen:</strong> approx. ${p.area}</p>
+            <p>${p.features}</p>
+            <div class="meta"><button class="ghost" data-report>Report</button></div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderDetail(id = 1) {
+      const p = posts.find(item => item.id === Number(id)) || posts[0];
+      document.getElementById("detail").innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-main card">
+            <button class="ghost" data-route="feed">Back to feed</button>
+            <div class="gallery">
+              <div class="pet-img" style="${photoStyle(p)}"><span>${p.type} photo</span></div>
+              <div class="pet-img" style="${photoStyle(p)}"><span>Second angle</span></div>
+            </div>
+            <div class="card-head">
+              <div><h1>${p.name}</h1><p>${p.type} last seen approx. ${p.area}</p></div>
+              <span class="chip ${p.status.toLowerCase()}">${p.status}</span>
+            </div>
+            <p><strong>Accessories:</strong> Pink collar with bell</p>
+            <p><strong>Defining features:</strong> ${p.features}</p>
+            <div class="comments">
+              <h2>Comments</h2>
+              ${comments.map(c => `<div class="comment"><strong>Anonymous helper</strong><p>${c}</p><button class="ghost" data-report>Report</button></div>`).join("")}
+              <div class="field"><label>Add comment</label><textarea id="newComment" placeholder="Share a sighting or helpful detail"></textarea></div>
+              <button data-action="addComment">Post comment</button>
+            </div>
+          </div>
+          <aside class="side-panel">
+            <h2>Approximate last-seen area</h2>
+            <div class="map"><span class="pin"></span></div>
+            <p>Exact coordinates are used for search. Public display is softened for privacy.</p>
+            <button data-action="openMessage">Message poster</button>
+            <button class="secondary" data-route="manage">Manage with private code</button>
+            <button class="ghost" data-report>Report post</button>
+          </aside>
+        </div>
+      `;
+    }
+
+    function showRoute(route) {
+      document.querySelectorAll(".route").forEach(el => el.classList.remove("active"));
+      document.getElementById(route).classList.add("active");
+      if (route === "detail") renderDetail(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function closeModals() {
+      document.querySelectorAll(".modal-backdrop").forEach(el => el.classList.remove("active"));
+    }
+
+    document.addEventListener("change", event => {
+      if (["radius", "type", "status", "sort"].includes(event.target.id)) renderFeed();
+    });
+
+    document.addEventListener("click", event => {
+      const route = event.target.dataset.route;
+      const action = event.target.dataset.action;
+      const card = event.target.closest("[data-open-post]");
+      if (event.target.dataset.report !== undefined) {
+        event.stopPropagation();
+        document.getElementById("reportModal").classList.add("active");
+      } else if (card) {
+        renderDetail(card.dataset.openPost);
+        showRoute("detail");
+      } else if (route) {
+        showRoute(route);
+      } else if (action === "openLocation") {
+        document.getElementById("locationModal").classList.add("active");
+      } else if (action === "allowLocation" || action === "manualLocation") {
+        closeModals();
+      } else if (action === "openMessage") {
+        document.getElementById("messageModal").classList.add("active");
+      } else if (action === "closeModals") {
+        closeModals();
+      } else if (action === "sendMessage") {
+        closeModals();
+        alert("Message sent in this prototype.");
+      } else if (action === "submitReport") {
+        closeModals();
+        alert("Report submitted in this prototype.");
+      } else if (action === "addComment") {
+        const box = document.getElementById("newComment");
+        if (box && box.value.trim()) {
+          comments.push(box.value.trim());
+          renderDetail(1);
+        }
+      } else if (action === "publish") {
+        const valid = document.getElementById("petName").value.trim() && document.getElementById("petFeatures").value.trim();
+        document.getElementById("postError").classList.toggle("hidden", valid);
+        document.getElementById("publishSuccess").classList.toggle("hidden", !valid);
+      } else if (action === "saveManage") {
+        alert("Status saved in this prototype.");
+      }
+    });
+
+    renderFeed();
+  </script>
+</body>
+</html>
