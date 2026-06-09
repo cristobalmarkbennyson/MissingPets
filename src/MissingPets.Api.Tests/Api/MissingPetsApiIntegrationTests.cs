@@ -116,6 +116,14 @@ public sealed class MissingPetsApiIntegrationTests
     }
 
     [Test]
+    public async Task FeedSearch_RejectsInvalidRadiusParameter()
+    {
+        var response = await _client.GetAsync("/api/posts?lat=14.5653&lng=121.0318&radiusKm=0");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
     public async Task Management_RejectsInvalidToken()
     {
         var upload = await CreateUpload();

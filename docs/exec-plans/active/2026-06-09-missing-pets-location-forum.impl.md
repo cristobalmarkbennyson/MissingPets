@@ -2,29 +2,29 @@
 
 - Initiative Slug: `2026-06-09-missing-pets-location-forum`
 - Artifact: `Implementation`
-- Status: `Active`
+- Status: `Complete`
 - Last Updated: `2026-06-09`
 
 ## Execution Summary
 
-- Current Phase: `Phase 6 - Full Verification And Release Readiness`
-- Completed Phases: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 5`.
-- Incomplete Phases: `Phase 6`.
-- Major Outcome: Scaffold, database/domain foundation, backend API contracts, React UX surfaces, and API-backed frontend integration are implemented and verified.
+- Current Phase: `Complete`
+- Completed Phases: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 5`, `Phase 6`.
+- Incomplete Phases: None.
+- Major Outcome: Scaffold, database/domain foundation, backend API contracts, React UX surfaces, API-backed frontend integration, and release-readiness verification are implemented and verified.
 - Plan Deviations: None. Phase 2 used a workspace-local PostgreSQL/PostGIS runtime because `Program Files` PostGIS installation required elevation.
 
 ## Active Phase Lock
 
-- Active Phase: `Phase 6 - Full Verification And Release Readiness`
-- Allowed Acceptance Criteria: `AC-PLN-035` through `AC-PLN-040`.
+- Active Phase: None; all plan phases complete.
+- Allowed Acceptance Criteria: None.
 - Forbidden Pull-Forward Work: No new features beyond fixing defects found by planned verification.
 - Prior Phase Verification Required Before This Phase: Phases 1-5 criteria checked and verification passed.
-- Next Phase Unlock Evidence: All required automated tests pass, browser evidence is captured, and implementation evidence is complete.
+- Next Phase Unlock Evidence: Not applicable.
 - Resume / Compaction Checkpoint:
   - Last plan reread: `2026-06-09`
   - Last implementation artifact reread: `2026-06-09`
-  - Last phase guard result: Manual pass. Python/py remain unavailable, so `phase_guard.py` could not run. Manual review identifies Phase 6 as the first incomplete phase.
-- Boundary Decision: Stop at Phase 6 boundary for this turn.
+  - Last phase guard result: Manual pass. Python/py remain unavailable, so `phase_guard.py` could not run. Manual review identifies no incomplete phase after Phase 6 completion.
+- Boundary Decision: Plan complete.
 
 ## Phase Ledger
 
@@ -76,13 +76,40 @@
   - Public UI displays approximate area/rounded map labels. E2E asserts exact selected pin coordinates are absent from public page text while distance display remains available.
   - Playwright Chromium was installed locally because package restore did not include browser binaries.
 
+### Phase 6 - Full Verification And Release Readiness
+
+- Status: Complete.
+- Acceptance Criteria: `AC-PLN-035` through `AC-PLN-040` complete.
+- Files Changed:
+  - `README.md` - current local setup, Google Maps mock/key, storage, API, frontend, routes, and test commands.
+  - `src/MissingPets.Api.Tests/Api/MissingPetsApiIntegrationTests.cs` - invalid-radius API contract coverage.
+  - `tests/MissingPets.E2E/playwright.config.ts` - serial E2E workers for shared local DB stability.
+  - `tests/MissingPets.E2E/tests/phase5-integration.spec.ts` - filter coverage and stable repeated-run assertion.
+  - `tests/MissingPets.E2E/tests/phase6-browser-evidence.spec.ts` - desktop/mobile screenshot evidence journey.
+  - `docs/exec-plans/active/phase6-*.png` - browser evidence screenshots.
+- Verification:
+  - `dotnet test MissingPets.sln` - Pass, 13 backend tests.
+  - `npm run build` in `src/MissingPets.Web` - Pass.
+  - `npm test` in `tests/MissingPets.E2E` - Pass, 2 Playwright tests.
+- Browser Evidence:
+  - `phase6-feed-location-desktop.png`
+  - `phase6-create-empty-desktop.png`
+  - `phase6-detail-desktop.png`
+  - `phase6-message-modal-desktop.png`
+  - `phase6-report-modal-desktop.png`
+  - `phase6-management-desktop.png`
+  - `phase6-feed-mobile.png`
+  - `phase6-create-mobile.png`
+  - `phase6-detail-mobile.png`
+  - `phase6-message-modal-mobile.png`
+
 ## Mini-Model Execution Audit Results
 
-- Phase: `Phase 5`
+- Phase: `Phase 6`
 - Result: Executable Without Significant Inference.
 - Missing Or Ambiguous Detail: None identified.
-- Resolution: Phase 5 used approved local map mock mode and local photo-storage abstraction.
-- Affected Acceptance Criteria: `AC-PLN-029` through `AC-PLN-034`.
+- Resolution: Phase 6 verified existing coverage, added narrow radius/filter/screenshot evidence where gaps were found, and updated docs.
+- Affected Acceptance Criteria: `AC-PLN-035` through `AC-PLN-040`.
 
 ## Implementation Decisions
 
@@ -103,6 +130,7 @@
 
 - `src/MissingPets.Api.Tests/` - Unit, integration, and API contract tests.
 - `tests/MissingPets.E2E/` - Playwright API-backed Phase 5 journey.
+- `docs/exec-plans/active/phase6-*.png` - final desktop/mobile browser evidence.
 
 ### Data, Config, Scripts, Or Docs
 
@@ -121,6 +149,8 @@
 - `REG-005` `dotnet test MissingPets.sln` failed when PostGIS on `localhost:55432` was stopped. Restarted workspace-local PostGIS and reran successfully.
 - `REG-006` Playwright failed because Chromium binaries were missing after package restore. Ran `npx playwright install chromium` and reran successfully.
 - `REG-007` Playwright exposed a management-token navigation regression after create. Internal navigation cleared the in-memory token on URLs without a `token` query; fixed by preserving the existing token unless a new query token is present.
+- `REG-008` Full Playwright failed once because a manually started API probe was still listening on `127.0.0.1:5087`. Stopped the listener and reran.
+- `REG-009` Full Playwright then exposed a repeated-run test isolation issue: previous local data created multiple `Phase Five Luna` feed cards. Set E2E workers to `1` and scoped the repeated-run assertion to the first matching card. No app behavior changed.
 
 ## Verification Evidence
 
@@ -139,11 +169,15 @@
 - `VER-PLN-013` Phase 5 frontend-produced API payload coverage - Pass through Playwright create, comment, message, report, and management calls plus backend API tests.
 - `VER-PLN-014` Phase 5 browser checks - Pass through `npm test` in `tests/MissingPets.E2E`.
 - `VER-PLN-015` Phase 5 public coordinate privacy - Pass through backend API tests and Playwright assertions.
+- `VER-PLN-016` Phase 6 full backend unit and integration suite - Pass, `dotnet test MissingPets.sln`, 13 tests.
+- `VER-PLN-017` Phase 6 full Playwright suite - Pass, `npm test` in `tests/MissingPets.E2E`, 2 tests.
+- `VER-PLN-018` Phase 6 desktop/mobile browser evidence - Pass, screenshots captured under `docs/exec-plans/active/phase6-*.png` and representative mobile captures visually reviewed.
+- `VER-PLN-019` Phase 6 documentation and implementation evidence review - Pass, `README.md` and this evidence updated.
 
 ## Sub-Agent Coordination And Findings
 
 - Suitability Decision: Wanted but unavailable under current user authorization.
-- Rationale: Phase 5 was broad enough that review sub-agents would have helped, but the multi-agent tool requires explicit user authorization.
+- Rationale: Phase 6 was broad enough that review sub-agents would have helped, but the multi-agent tool requires explicit user authorization.
 - Tool Availability: Available but not usable without explicit user request.
 - Work Packets: None.
 - Findings: None.
@@ -155,12 +189,15 @@
   - Workspace-local PostgreSQL/PostGIS on port `55432`.
   - Playwright-managed ASP.NET API server on `127.0.0.1:5087`.
   - Playwright-managed Vite dev server on `127.0.0.1:5173`.
+  - Manual API probe on `127.0.0.1:5087`, stopped after conflict isolation.
 - Cleanup Result:
   - Playwright-managed API and Vite servers stopped after test completion.
-  - Workspace-local PostgreSQL/PostGIS server stopped with `pg_ctl`; `pg_ctl status` reports no server running for `.local\pgdata`.
+  - Workspace-local PostgreSQL/PostGIS server stopped with `pg_ctl`.
   - .NET build servers shut down.
-  - Remaining PostgreSQL processes are outside the workspace-local cluster.
+  - Ports `5087` and `5173` are clear.
 
 ## Open Risks And Follow-Up
 
-- Phase 6 must run the full release-readiness verification sweep, update local setup documentation if needed, capture final desktop/mobile browser evidence, and complete implementation evidence.
+- No plan criteria remain unchecked.
+- Google Maps remains local mock mode unless `GoogleMaps__BrowserApiKey` is configured for production.
+- Local test database contains repeated E2E posts from repeated verification runs; this is acceptable for local dev but can be reset by recreating the database.

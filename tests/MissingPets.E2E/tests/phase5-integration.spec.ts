@@ -57,4 +57,11 @@ test('phase 5 API-backed missing pet journey', async ({ page }) => {
 
   await page.getByRole('button', { name: 'View public post' }).click()
   await expect(page.getByText('Found')).toBeVisible()
+
+  await page.getByRole('button', { name: 'MP MissingPets' }).click()
+  await page.getByLabel('Radius').selectOption('25')
+  await page.getByLabel('Pet type').selectOption('Dog')
+  await page.getByLabel('Status').selectOption('Found')
+  await page.getByLabel('Sort').selectOption('Newest')
+  await expect(page.getByRole('heading', { name: 'Phase Five Luna' }).first()).toBeVisible()
 })

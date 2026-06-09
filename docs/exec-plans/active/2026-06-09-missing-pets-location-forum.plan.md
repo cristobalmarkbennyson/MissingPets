@@ -231,12 +231,12 @@ Connect frontend surfaces to backend APIs, Google Maps, photo upload/display, pr
 
 ### Acceptance Criteria
 
-- [ ] `AC-PLN-035` NUnit unit tests cover validators, token generation/verification, response mapping, radius parameter handling, and public-location approximation. Traces to `TEST-001`.
-- [ ] `AC-PLN-036` NUnit integration tests cover schema, PostGIS radius search, post creation, photo metadata, comments, messages, management updates, and abuse reports. Traces to `TEST-002`.
-- [ ] `AC-PLN-037` Playwright E2E tests cover feed-first location prompt, manual fallback, filters, create post, post detail, comments, message/contact form, report abuse, and anonymous management. Traces to `TEST-003`, `UX-001` through `UX-010`.
-- [ ] `AC-PLN-038` Desktop and mobile browser evidence proves controls and text do not overflow or collide, including modals/drawers and form-heavy routes. Traces to `TEST-004`.
-- [ ] `AC-PLN-039` Documentation explains local setup for PostgreSQL/PostGIS, Google Maps key, storage configuration, API, frontend, and test commands. Traces to `CFG-001` through `CFG-007`.
-- [ ] `AC-PLN-040` Implementation evidence file records completed phases, commands run, test outcomes, screenshots or browser evidence, unresolved risks, and any deferred criteria left unchecked. Traces to Execution Protocol.
+- [x] `AC-PLN-035` NUnit unit tests cover validators, token generation/verification, response mapping, radius parameter handling, and public-location approximation. Traces to `TEST-001`.
+- [x] `AC-PLN-036` NUnit integration tests cover schema, PostGIS radius search, post creation, photo metadata, comments, messages, management updates, and abuse reports. Traces to `TEST-002`.
+- [x] `AC-PLN-037` Playwright E2E tests cover feed-first location prompt, manual fallback, filters, create post, post detail, comments, message/contact form, report abuse, and anonymous management. Traces to `TEST-003`, `UX-001` through `UX-010`.
+- [x] `AC-PLN-038` Desktop and mobile browser evidence proves controls and text do not overflow or collide, including modals/drawers and form-heavy routes. Traces to `TEST-004`.
+- [x] `AC-PLN-039` Documentation explains local setup for PostgreSQL/PostGIS, Google Maps key, storage configuration, API, frontend, and test commands. Traces to `CFG-001` through `CFG-007`.
+- [x] `AC-PLN-040` Implementation evidence file records completed phases, commands run, test outcomes, screenshots or browser evidence, unresolved risks, and any deferred criteria left unchecked. Traces to Execution Protocol.
 
 ### Verification
 

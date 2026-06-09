@@ -1,8 +1,8 @@
 # MissingPets
 
-MissingPets is a web-first missing-pet forum planned around location-aware nearby posts, anonymous posting, pet photos, comments, simple post-attached messaging, and Google Maps last-seen pinning.
+MissingPets is a web-first missing-pet forum with location-aware nearby posts, anonymous posting, pet photos, comments, simple post-attached messaging, abuse reports, anonymous management links, and Google Maps-style last-seen pinning.
 
-The current implementation has completed Phase 1 scaffold and Phase 2 database/domain foundation. Later phases add APIs, UX surfaces, Google Maps, photo storage, and full verification.
+The current implementation includes the ASP.NET Core API, PostgreSQL/PostGIS persistence, local photo-storage display, React/Vite web UX, and Playwright end-to-end coverage. Native mobile apps remain future scope.
 
 ## Project Layout
 
@@ -16,11 +16,12 @@ The current implementation has completed Phase 1 scaffold and Phase 2 database/d
 
 - .NET SDK 8.0 or compatible.
 - Node.js LTS with npm.
-- PostgreSQL with PostGIS is required for Phase 2 and later database verification.
+- PostgreSQL with PostGIS.
+- Playwright Chromium for browser verification.
 
 ## Environment Variables
 
-The scaffold includes placeholders for:
+The app reads these configuration keys:
 
 - `ConnectionStrings__MissingPetsDb`
 - `GoogleMaps__BrowserApiKey`
@@ -35,6 +36,10 @@ Local defaults are documented in `src/MissingPets.Api/appsettings.json`. The cur
 ```text
 Host=localhost;Port=55432;Database=missingpets;Username=postgres
 ```
+
+Google Maps is configured through `GoogleMaps__BrowserApiKey`. The current web implementation uses the approved local map mock mode when no browser key is provided, so local development and tests do not require a paid Maps key. Production should provide a real browser API key.
+
+Photo storage is configured through the `Storage__*` keys. Local development uses `Storage__Provider=Local` and serves deterministic local display images from `/local-photos/{uploadId}` after upload metadata is accepted.
 
 ## Local PostgreSQL/PostGIS Runtime
 
@@ -58,13 +63,13 @@ $pg=(Resolve-Path '.local\postgresql17').Path
 
 ```powershell
 $env:PATH='C:\Program Files\dotnet;C:\Program Files\nodejs;'+$env:PATH
-dotnet run --project src\MissingPets.Api\MissingPets.Api.csproj
+dotnet run --project src\MissingPets.Api\MissingPets.Api.csproj --no-launch-profile --urls http://127.0.0.1:5087
 ```
 
 Health endpoint:
 
 ```text
-GET http://localhost:5000/health
+GET http://127.0.0.1:5087/health
 ```
 
 ## Run The Web App
@@ -74,6 +79,20 @@ $env:PATH='C:\Program Files\nodejs;'+$env:PATH
 cd src\MissingPets.Web
 & 'C:\Program Files\nodejs\npm.cmd' run dev
 ```
+
+The frontend defaults to `http://127.0.0.1:5087` for the API. Override it with `VITE_API_BASE_URL` when needed:
+
+```powershell
+$env:VITE_API_BASE_URL='http://127.0.0.1:5087'
+& 'C:\Program Files\nodejs\npm.cmd' run dev -- --host 127.0.0.1 --port 5173
+```
+
+Primary web routes:
+
+- `/` - nearby feed with location prompt and filters.
+- `/posts/new` - anonymous create-post flow with photo upload and map pin mock.
+- `/posts/{postId}` - public post detail, comments, messaging, and report actions.
+- `/posts/{postId}/manage?token=...` - private anonymous management link.
 
 ## Run Tests
 
@@ -97,8 +116,11 @@ Playwright smoke:
 ```powershell
 $env:PATH='C:\Program Files\nodejs;'+$env:PATH
 cd tests\MissingPets.E2E
+& 'C:\Program Files\nodejs\npx.cmd' playwright install chromium
 & 'C:\Program Files\nodejs\npm.cmd' test
 ```
+
+The Playwright config starts the API and Vite dev server automatically. Start the local PostgreSQL/PostGIS runtime before running backend or E2E tests.
 
 ## Prototype
 
