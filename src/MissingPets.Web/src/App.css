@@ -46,6 +46,11 @@ button.danger {
   background: var(--danger);
 }
 
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 button.fit {
   width: fit-content;
 }
@@ -348,6 +353,18 @@ main {
   background: white;
 }
 
+.map-label {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .form-panel,
 .detail-main {
   display: grid;
@@ -371,7 +388,8 @@ main {
   gap: 10px;
 }
 
-.upload-grid div {
+.upload-grid div,
+.upload-tile {
   min-height: 118px;
   display: grid;
   place-items: center;
@@ -382,6 +400,10 @@ main {
   font-weight: 800;
   text-align: center;
   padding: 12px;
+}
+
+.upload-tile {
+  width: 100%;
 }
 
 .map-section {
@@ -422,6 +444,24 @@ main {
 
 .gallery .pet-photo {
   min-height: 220px;
+}
+
+.pet-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.pet-photo img.visible {
+  opacity: 1;
+}
+
+.pet-photo img.visible + span {
+  background: rgba(0, 0, 0, 0.52);
 }
 
 .comments,

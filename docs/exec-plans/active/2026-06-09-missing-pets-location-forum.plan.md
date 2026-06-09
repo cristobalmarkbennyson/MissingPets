@@ -202,12 +202,12 @@ Connect frontend surfaces to backend APIs, Google Maps, photo upload/display, pr
 
 ### Acceptance Criteria
 
-- [ ] `AC-PLN-029` Wire browser geolocation and manual location selection to feed API queries using `lat`, `lng`, and radius. Traces to `UX-001`, `UX-002`, `INT-API-001`, `ARC-GEO-002`.
-- [ ] `AC-PLN-030` Wire Google Maps selected pin to create-post payload and persist precise coordinates server-side. Traces to `UX-005`, `INT-API-002`, `ARC-GEO-001`.
-- [ ] `AC-PLN-031` Wire photo upload and display from create flow through object storage to feed/detail views. Traces to `UX-004`, `UX-006`, `INT-API-002`, `INT-API-003`, `ARC-004`.
-- [ ] `AC-PLN-032` Ensure public feed/detail map data displays approximate location while distance search still uses precise coordinates. Traces to `DEC-003`, `DEC-UX-005`, `ARC-GEO-003`.
-- [ ] `AC-PLN-033` Wire comments, message/contact form, management status update, and report abuse UI to backend APIs. Traces to `UX-007`, `UX-008`, `UX-009`, `UX-010`, `INT-API-004`, `INT-API-005`, `INT-API-006`, `INT-API-007`.
-- [ ] `AC-PLN-034` Add user-visible loading, empty, validation, denied-permission, API error, upload error, and map error states for all affected surfaces. Traces to `AC-UX-006`, `UX-001` through `UX-010`.
+- [x] `AC-PLN-029` Wire browser geolocation and manual location selection to feed API queries using `lat`, `lng`, and radius. Traces to `UX-001`, `UX-002`, `INT-API-001`, `ARC-GEO-002`.
+- [x] `AC-PLN-030` Wire Google Maps selected pin to create-post payload and persist precise coordinates server-side. Traces to `UX-005`, `INT-API-002`, `ARC-GEO-001`.
+- [x] `AC-PLN-031` Wire photo upload and display from create flow through object storage to feed/detail views. Traces to `UX-004`, `UX-006`, `INT-API-002`, `INT-API-003`, `ARC-004`.
+- [x] `AC-PLN-032` Ensure public feed/detail map data displays approximate location while distance search still uses precise coordinates. Traces to `DEC-003`, `DEC-UX-005`, `ARC-GEO-003`.
+- [x] `AC-PLN-033` Wire comments, message/contact form, management status update, and report abuse UI to backend APIs. Traces to `UX-007`, `UX-008`, `UX-009`, `UX-010`, `INT-API-004`, `INT-API-005`, `INT-API-006`, `INT-API-007`.
+- [x] `AC-PLN-034` Add user-visible loading, empty, validation, denied-permission, API error, upload error, and map error states for all affected surfaces. Traces to `AC-UX-006`, `UX-001` through `UX-010`.
 
 ### Verification
 
