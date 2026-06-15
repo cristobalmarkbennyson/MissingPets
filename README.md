@@ -25,6 +25,7 @@ The app reads these configuration keys:
 
 - `ConnectionStrings__MissingPetsDb`
 - `GoogleMaps__BrowserApiKey`
+- `VITE_GOOGLE_MAPS_BROWSER_API_KEY`
 - `Storage__Provider`
 - `Storage__ConnectionString`
 - `Storage__PhotoContainer`
@@ -37,7 +38,9 @@ Local defaults are documented in `src/MissingPets.Api/appsettings.json`. The cur
 Host=localhost;Port=55432;Database=missingpets;Username=postgres
 ```
 
-Google Maps is configured through `GoogleMaps__BrowserApiKey`. The current web implementation uses the approved local map mock mode when no browser key is provided, so local development and tests do not require a paid Maps key. Production should provide a real browser API key.
+Google Maps backend/server configuration is represented by `GoogleMaps__BrowserApiKey`. The React/Vite browser bundle reads `VITE_GOOGLE_MAPS_BROWSER_API_KEY` for the Maps JavaScript API. Do not commit real API key values.
+
+When `VITE_GOOGLE_MAPS_BROWSER_API_KEY` is empty, the web app uses local map fallback mode so development and Playwright tests can run without a paid Maps key. Production real map pinning requires `VITE_GOOGLE_MAPS_BROWSER_API_KEY` with Maps JavaScript API, Places, and Geocoding enabled for the Google Cloud project.
 
 Photo storage is configured through the `Storage__*` keys. Local development uses `Storage__Provider=Local` and serves deterministic local display images from `/local-photos/{uploadId}` after upload metadata is accepted.
 
@@ -84,13 +87,14 @@ The frontend defaults to `http://127.0.0.1:5087` for the API. Override it with `
 
 ```powershell
 $env:VITE_API_BASE_URL='http://127.0.0.1:5087'
+$env:VITE_GOOGLE_MAPS_BROWSER_API_KEY='<browser-safe-google-maps-key>'
 & 'C:\Program Files\nodejs\npm.cmd' run dev -- --host 127.0.0.1 --port 5173
 ```
 
 Primary web routes:
 
 - `/` - nearby feed with location prompt and filters.
-- `/posts/new` - anonymous create-post flow with photo upload and map pin mock.
+- `/posts/new` - anonymous create-post flow with photo upload and last-seen map pin fallback when no browser Maps key is configured.
 - `/posts/{postId}` - public post detail, comments, messaging, and report actions.
 - `/posts/{postId}/manage?token=...` - private anonymous management link.
 

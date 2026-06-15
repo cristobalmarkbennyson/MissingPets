@@ -1,17 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import './App.css'
+import { LastSeenMapPicker } from './maps/LastSeenMapPicker'
+import type { LastSeenPin } from './maps/mapTypes'
 
 type PetStatus = 'Missing' | 'Found'
 type ModalState = 'message' | 'report' | null
 type LoadState = 'idle' | 'loading' | 'error'
 
-type LocationState = {
-  label: string
-  lat: number
-  lng: number
-  source: 'default' | 'browser' | 'manual'
-}
+type LocationState = LastSeenPin
 
 type FeedPost = {
   id: string
@@ -156,6 +153,7 @@ function App() {
   const [isPublishing, setIsPublishing] = useState(false)
   const [mapError, setMapError] = useState(false)
   const [selectedPin, setSelectedPin] = useState(defaultLocation)
+  const [pinConfirmed, setPinConfirmed] = useState(false)
   const [draftPhotos, setDraftPhotos] = useState<DraftPhoto[]>([])
   const draftPhotoUrlsRef = useRef<string[]>([])
   const [publishedPhotoPreviews, setPublishedPhotoPreviews] = useState<Record<string, string>>({})
@@ -386,9 +384,14 @@ function App() {
     return uploadId && publishedPhotoPreviews[uploadId] ? publishedPhotoPreviews[uploadId] : photoUrl(url)
   }
 
-  function updatePin(placeLabel: string) {
-    const key = Object.keys(manualPlaces).find((place) => placeLabel.toLowerCase().includes(place))
-    setSelectedPin(key ? manualPlaces[key] : { ...defaultLocation, label: placeLabel || defaultLocation.label, source: 'manual' })
+  function updatePin(pin: LocationState) {
+    setSelectedPin(pin)
+    setPinConfirmed(false)
+  }
+
+  function confirmPin(pin: LocationState) {
+    setSelectedPin(pin)
+    setPinConfirmed(true)
   }
 
   async function submitCreate(event: FormEvent<HTMLFormElement>) {
@@ -399,8 +402,8 @@ function App() {
     const accessories = String(data.get('accessories') ?? '').trim()
     const features = String(data.get('features') ?? '').trim()
 
-    if (!petName || !features || draftPhotos.length === 0) {
-      setCreateError('Pet name, defining features, and at least one uploaded photo are required.')
+    if (!petName || !features || draftPhotos.length === 0 || !pinConfirmed) {
+      setCreateError(!pinConfirmed ? 'Confirm the last-seen pin before publishing.' : 'Pet name, defining features, and at least one uploaded photo are required.')
       setCreateMessage('')
       return
     }
@@ -512,6 +515,9 @@ function App() {
             uploadError={uploadError}
             mapError={mapError}
             selectedPin={selectedPin}
+            pinConfirmed={pinConfirmed}
+            searchLocation={location}
+            fallbackPlaces={manualPlaces}
             isPublishing={isPublishing}
             onPhotosSelected={addDraftPhotos}
             onRemovePhoto={removeDraftPhoto}
@@ -519,6 +525,7 @@ function App() {
             onCancel={() => navigate('/')}
             onToggleMapError={() => setMapError((value) => !value)}
             onPinChange={updatePin}
+            onPinConfirm={confirmPin}
           />
         )}
         {isDetail && (
@@ -673,13 +680,17 @@ function CreatePostSurface(props: {
   uploadError: string
   mapError: boolean
   selectedPin: LocationState
+  pinConfirmed: boolean
+  searchLocation: LocationState
+  fallbackPlaces: Record<string, LocationState>
   isPublishing: boolean
   onPhotosSelected: (files: FileList) => void
   onRemovePhoto: (photoId: string) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onCancel: () => void
   onToggleMapError: () => void
-  onPinChange: (label: string) => void
+  onPinChange: (pin: LocationState) => void
+  onPinConfirm: (pin: LocationState) => void
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -739,21 +750,16 @@ function CreatePostSurface(props: {
           <textarea name="features" placeholder="White paws, scar near left ear, very shy" />
         </label>
       </div>
-      <section className="map-section" aria-label="Google Maps last-seen pin picker">
-        <div className="card-head">
-          <h2>Last-seen pin</h2>
-          <button className="ghost" type="button" onClick={props.onToggleMapError}>
-            {props.mapError ? 'Show map' : 'Show map error'}
-          </button>
-        </div>
-        <label>
-          <span>Place search</span>
-          <input defaultValue={props.selectedPin.label} onBlur={(event) => props.onPinChange(event.target.value)} />
-        </label>
-        {props.mapError ? <div className="map-error">Map provider unavailable. Place search can be retried.</div> : <MapPanel lat={props.selectedPin.lat} lng={props.selectedPin.lng} />}
-        <div className="success-box">Pin selected for {props.selectedPin.label}.</div>
-        <p>Exact coordinates are saved for search. Public display uses an approximate area.</p>
-      </section>
+      <LastSeenMapPicker
+        value={props.selectedPin}
+        defaultCenter={props.searchLocation}
+        confirmed={props.pinConfirmed}
+        providerUnavailable={props.mapError}
+        fallbackPlaces={props.fallbackPlaces}
+        onDraftChange={props.onPinChange}
+        onConfirm={props.onPinConfirm}
+        onToggleProviderUnavailable={props.onToggleMapError}
+      />
       {props.createError && <p className="error-text">{props.createError}</p>}
       {props.createMessage && <div className="success-box">{props.createMessage}</div>}
       <div className="row-actions end">

@@ -86,10 +86,10 @@ Configuration:
 
 ### Acceptance Criteria
 
-- [ ] `AC-MAP-001` Add a browser maps API key configuration path for the React/Vite frontend without hardcoding secrets. Traces to `ARC-001`, `ARC-005`, `CFG-002`.
-- [ ] `AC-MAP-002` Add a Google Maps JavaScript loader seam that loads Maps, Places, and Geocoding capabilities only when a browser key is configured. Traces to `ARC-005`, `UX-005`.
-- [ ] `AC-MAP-003` Preserve deterministic no-key fallback behavior for local tests, with user-visible map-unavailable messaging when real maps cannot load. Traces to `UX-005`, `AC-PLN-034`.
-- [ ] `AC-MAP-004` Document the frontend maps key and clarify that production real maps require `VITE_GOOGLE_MAPS_BROWSER_API_KEY`. Traces to `CFG-002`, `AC-PLN-039`.
+- [x] `AC-MAP-001` Add a browser maps API key configuration path for the React/Vite frontend without hardcoding secrets. Traces to `ARC-001`, `ARC-005`, `CFG-002`.
+- [x] `AC-MAP-002` Add a Google Maps JavaScript loader seam that loads Maps, Places, and Geocoding capabilities only when a browser key is configured. Traces to `ARC-005`, `UX-005`.
+- [x] `AC-MAP-003` Preserve deterministic no-key fallback behavior for local tests, with user-visible map-unavailable messaging when real maps cannot load. Traces to `UX-005`, `AC-PLN-034`.
+- [x] `AC-MAP-004` Document the frontend maps key and clarify that production real maps require `VITE_GOOGLE_MAPS_BROWSER_API_KEY`. Traces to `CFG-002`, `AC-PLN-039`.
 
 ### Verification
 
@@ -139,12 +139,12 @@ Required picker behavior:
 
 ### Acceptance Criteria
 
-- [ ] `AC-MAP-005` [Surface `UX-005`] Implement the last-seen picker as an embedded component in `/posts/new` with Google map, search, selected marker, and confirmation action; it must not become a separate post-creation route or modal on desktop. Traces to `UX-004`, `UX-005`, `F-008`, `ARC-005`.
-- [ ] `AC-MAP-006` [Surface `UX-005`] Allow posters to set the pin by Places search, map click, and marker drag, with React state updated to the selected `lat`, `lng`, and `humanReadable` value. Traces to `UX-005`, `WF-003`, `INT-API-002`.
-- [ ] `AC-MAP-007` [Surface `UX-005`] Make the default map center a starting context only; publishing must require an explicitly confirmed selected pin. Traces to `WF-003`, `DATA-001`, `AC-PLN-030`.
-- [ ] `AC-MAP-008` [Surface `UX-005`] Display map loading, provider unavailable, no place result, and reverse-geocode fallback states without blocking the rest of the create form. Traces to `UX-005`, `AC-PLN-034`.
-- [ ] `AC-MAP-009` [Surface `UX-005`] Preserve the privacy note that exact coordinates are stored for search and public display is approximate. Traces to `DEC-UX-005`, `ARC-GEO-003`.
-- [ ] `AC-MAP-010` Keep feed and detail `MapPanel` approximate display behavior unchanged unless a separate upstream decision approves real public map rendering. Traces to `UX-006`, `DEC-UX-005`, `ARC-GEO-003`.
+- [x] `AC-MAP-005` [Surface `UX-005`] Implement the last-seen picker as an embedded component in `/posts/new` with Google map, search, selected marker, and confirmation action; it must not become a separate post-creation route or modal on desktop. Traces to `UX-004`, `UX-005`, `F-008`, `ARC-005`.
+- [x] `AC-MAP-006` [Surface `UX-005`] Allow posters to set the pin by Places search, map click, and marker drag, with React state updated to the selected `lat`, `lng`, and `humanReadable` value. Traces to `UX-005`, `WF-003`, `INT-API-002`.
+- [x] `AC-MAP-007` [Surface `UX-005`] Make the default map center a starting context only; publishing must require an explicitly confirmed selected pin. Traces to `WF-003`, `DATA-001`, `AC-PLN-030`.
+- [x] `AC-MAP-008` [Surface `UX-005`] Display map loading, provider unavailable, no place result, and reverse-geocode fallback states without blocking the rest of the create form. Traces to `UX-005`, `AC-PLN-034`.
+- [x] `AC-MAP-009` [Surface `UX-005`] Preserve the privacy note that exact coordinates are stored for search and public display is approximate. Traces to `DEC-UX-005`, `ARC-GEO-003`.
+- [x] `AC-MAP-010` Keep feed and detail `MapPanel` approximate display behavior unchanged unless a separate upstream decision approves real public map rendering. Traces to `UX-006`, `DEC-UX-005`, `ARC-GEO-003`.
 
 ### Verification
 
@@ -188,10 +188,10 @@ Required behavior:
 
 ### Acceptance Criteria
 
-- [ ] `AC-MAP-011` Require a confirmed last-seen pin before `POST /api/posts` is called from `/posts/new`. Traces to `UX-005`, `WF-003`, `DATA-001`.
-- [ ] `AC-MAP-012` Ensure create-post payload `lastSeen` values come from the confirmed picker state, not from `defaultLocation` or arbitrary text fallback. Traces to `INT-API-002`, `ARC-GEO-001`, `AC-PLN-030`.
-- [ ] `AC-MAP-013` Preserve backend validation for required last-seen coordinates and do not weaken `PetPostValidator` expectations. Traces to `DATA-001`, `AC-PLN-009`.
-- [ ] `AC-MAP-014` Preserve public approximate map behavior in feed/detail UI and API responses after creating a post with a real selected pin. Traces to `DEC-003`, `DEC-UX-005`, `ARC-GEO-003`, `AC-PLN-032`.
+- [x] `AC-MAP-011` Require a confirmed last-seen pin before `POST /api/posts` is called from `/posts/new`. Traces to `UX-005`, `WF-003`, `DATA-001`.
+- [x] `AC-MAP-012` Ensure create-post payload `lastSeen` values come from the confirmed picker state, not from `defaultLocation` or arbitrary text fallback. Traces to `INT-API-002`, `ARC-GEO-001`, `AC-PLN-030`.
+- [x] `AC-MAP-013` Preserve backend validation for required last-seen coordinates and do not weaken `PetPostValidator` expectations. Traces to `DATA-001`, `AC-PLN-009`.
+- [x] `AC-MAP-014` Preserve public approximate map behavior in feed/detail UI and API responses after creating a post with a real selected pin. Traces to `DEC-003`, `DEC-UX-005`, `ARC-GEO-003`, `AC-PLN-032`.
 
 ### Verification
 
@@ -228,10 +228,10 @@ Concrete touchpoints:
 
 ### Acceptance Criteria
 
-- [ ] `AC-MAP-015` Documentation explains how to run the app with real Google Maps and how no-key fallback behaves locally. Traces to `CFG-002`, `AC-MAP-001`, `AC-MAP-003`.
-- [ ] `AC-MAP-016` Playwright or browser evidence covers `/posts/new` map picker at desktop and mobile widths. Traces to `UX-005`, `TEST-003`, `TEST-004`.
-- [ ] `AC-MAP-017` Implementation evidence records files changed, commands run, pass/fail outcomes, unresolved risks, and whether live Google Maps verification used a real key. Traces to `AC-PLN-040`.
-- [ ] `AC-MAP-018` Existing full-app behavior remains intact: feed location prompt, create post, detail view, comments, message, report, and management tests pass. Traces to `UX-001` through `UX-010`, `TEST-003`.
+- [x] `AC-MAP-015` Documentation explains how to run the app with real Google Maps and how no-key fallback behaves locally. Traces to `CFG-002`, `AC-MAP-001`, `AC-MAP-003`.
+- [x] `AC-MAP-016` Playwright or browser evidence covers `/posts/new` map picker at desktop and mobile widths. Traces to `UX-005`, `TEST-003`, `TEST-004`.
+- [x] `AC-MAP-017` Implementation evidence records files changed, commands run, pass/fail outcomes, unresolved risks, and whether live Google Maps verification used a real key. Traces to `AC-PLN-040`.
+- [x] `AC-MAP-018` Existing full-app behavior remains intact: feed location prompt, create post, detail view, comments, message, report, and management tests pass. Traces to `UX-001` through `UX-010`, `TEST-003`.
 
 ### Verification
 
@@ -255,4 +255,3 @@ Concrete touchpoints:
 - `AUD-MAP-004` Acceptance criteria prevent default-coordinate leakage and preserve public approximate display.
 - `AUD-MAP-005` Verification identifies build, backend test, E2E, desktop/mobile browser evidence, and live-key manual verification expectations.
 - `AUD-MAP-006` Known unresolved dependency: live Google Maps verification requires a valid browser API key with Maps JavaScript API, Places, and Geocoding enabled.
-

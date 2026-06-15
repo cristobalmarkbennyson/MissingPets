@@ -11,8 +11,12 @@ const petPhoto = {
 
 test('phase 5 API-backed missing pet journey', async ({ page }) => {
   let photoUploadRequests = 0
+  const createPostPayloads: unknown[] = []
   page.on('request', (request) => {
     if (request.url().includes('/api/photo-uploads')) photoUploadRequests += 1
+    if (request.method() === 'POST' && request.url().endsWith('/api/posts')) {
+      createPostPayloads.push(request.postDataJSON())
+    }
   })
 
   await page.goto('/')
@@ -32,13 +36,26 @@ test('phase 5 API-backed missing pet journey', async ({ page }) => {
   await page.getByLabel('Pet type').selectOption('Dog')
   await page.getByLabel('Accessories').fill('Blue harness with small tag')
   await page.getByLabel('Defining features').fill('White paws, tan face, very shy around traffic.')
+
+  await page.getByRole('button', { name: 'Publish post' }).click()
+  await expect(page.getByText('Confirm the last-seen pin before publishing.')).toBeVisible()
+  expect(photoUploadRequests).toBe(0)
+  expect(createPostPayloads).toHaveLength(0)
+
+  await expect(page.getByText('Google Maps key is not configured.')).toBeVisible()
   await page.getByLabel('Place search').fill('BGC, Taguig')
-  await page.getByLabel('Place search').blur()
-  await expect(page.getByText('Pin selected for BGC, Taguig.')).toBeVisible()
+  await page.getByRole('button', { name: 'Search local fallback' }).click()
+  await expect(page.getByText('Selected pin: BGC, Taguig.')).toBeVisible()
+  await page.getByRole('button', { name: 'Confirm last-seen location' }).click()
+  await expect(page.getByText('Confirmed last-seen location: BGC, Taguig.')).toBeVisible()
 
   await page.getByRole('button', { name: 'Publish post' }).click()
   await expect(page.getByText('Published. Private management link:')).toBeVisible()
   expect(photoUploadRequests).toBe(1)
+  expect(createPostPayloads).toHaveLength(1)
+  expect(createPostPayloads[0]).toMatchObject({
+    lastSeen: { lat: 14.5503, lng: 121.0503, humanReadable: 'BGC, Taguig' },
+  })
   await page.waitForURL(/\/posts\/[0-9a-f-]+$/)
 
   await expect(page.getByRole('heading', { name: 'Phase Five Luna' })).toBeVisible()

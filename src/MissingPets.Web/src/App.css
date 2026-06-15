@@ -427,9 +427,51 @@ main {
   clip-path: inset(50%);
 }
 
-.map-section {
+.map-section,
+.map-picker {
   display: grid;
   gap: 12px;
+}
+
+.google-map {
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #e7edf2;
+}
+
+.google-map.local-fallback {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    linear-gradient(135deg, #dbeafe, #d1fae5 45%, #fef3c7);
+  background-size: 34px 34px, 34px 34px, cover;
+}
+
+.google-map.local-fallback::before,
+.google-map.local-fallback::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(24, 32, 44, 0.16);
+}
+
+.google-map.local-fallback::before {
+  width: 82%;
+  height: 12px;
+  left: -8%;
+  top: 42%;
+  transform: rotate(-12deg);
+}
+
+.google-map.local-fallback::after {
+  width: 58%;
+  height: 10px;
+  right: -10%;
+  top: 66%;
+  transform: rotate(24deg);
 }
 
 .map-error,
