@@ -3,7 +3,7 @@
 - Initiative Slug: `2026-06-09-missing-pets-location-forum`
 - Artifact: `Implementation`
 - Status: `Complete`
-- Last Updated: `2026-06-09`
+- Last Updated: `2026-06-15`
 
 ## Execution Summary
 
@@ -12,6 +12,32 @@
 - Incomplete Phases: None.
 - Major Outcome: Scaffold, database/domain foundation, backend API contracts, React UX surfaces, API-backed frontend integration, and release-readiness verification are implemented and verified.
 - Plan Deviations: None. Phase 2 used a workspace-local PostgreSQL/PostGIS runtime because `Program Files` PostGIS installation required elevation.
+
+### Follow-Up Execution - Local Photo Picker
+
+- Date: `2026-06-15`
+- Scope: Narrow follow-on to completed Phase 5 photo behavior for `UX-004` create-post photos.
+- Outcome: Replaced the sample-photo button with a native file picker that accepts up to six draft images, previews selected files locally, allows removal before publishing, and creates backend photo upload tickets only during `Publish post`.
+- API Contract Update: `LocalPhotoStorageService` now accepts `image/gif`, `image/heic`, and `image/heif` metadata in addition to `image/jpeg`, `image/png`, and `image/webp`.
+- Files Changed: `src/MissingPets.Web/src/App.tsx`, `src/MissingPets.Web/src/App.css`, `src/MissingPets.Api/Storage/PhotoStorageService.cs`, `src/MissingPets.Api.Tests/Api/MissingPetsApiIntegrationTests.cs`, `tests/MissingPets.E2E/tests/phase5-integration.spec.ts`, `tests/MissingPets.E2E/tests/phase6-browser-evidence.spec.ts`.
+- Verification:
+  - `npm run build` in `src/MissingPets.Web` - Pass.
+  - `dotnet test MissingPets.sln` - Blocked by existing Debug API process `PID 17912` locking `MissingPets.Api.exe`.
+  - `dotnet test MissingPets.sln -c Release` - Pass, 14 backend tests.
+  - `npm test` in `tests/MissingPets.E2E` - Pass, 2 Playwright tests against existing local API/Vite servers on ports `5087` and `5173`.
+  - `npm run lint` in `src/MissingPets.Web` - Failed on pre-existing React hook lint findings in `App.tsx` around effect state updates and function declarations; no photo-picker-specific lint finding was reported.
+- Sub-Agent Coordination: Skipped because the available multi-agent tool requires explicit user authorization for spawning sub-agents.
+- Regression Notes: No app regressions were caused. One verification reroute was needed because an already-running API process locked the Debug build output; Release verification passed.
+
+### Follow-Up Execution - Published Local Photo Display
+
+- Date: `2026-06-15`
+- Scope: Fix published create-post photos showing the `/local-photos/...` placeholder instead of the just-selected image.
+- Outcome: The web app now maps publish-time upload IDs back to the selected local preview object URLs and resolves those previews for detail-gallery and feed-card image rendering in the same browser session.
+- Files Changed: `src/MissingPets.Web/src/App.tsx`, `tests/MissingPets.E2E/tests/phase5-integration.spec.ts`.
+- Verification:
+  - `npm run build` in `src/MissingPets.Web` - Pass.
+  - `npm test` in `tests/MissingPets.E2E` - Pass, 2 Playwright tests. The Phase 5 journey now asserts that the detail gallery and feed card image `src` values are `blob:` URLs after publishing.
 
 ## Active Phase Lock
 

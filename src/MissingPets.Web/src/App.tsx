@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import './App.css'
 
@@ -46,11 +46,19 @@ type CommentDto = {
   createdAt: string
 }
 
-type UploadTicket = {
-  uploadId: string
-  displayUrl: string
+type DraftPhoto = {
+  id: string
+  file: File
   fileName: string
+  contentType: string
+  sizeBytes: number
+  previewUrl: string
 }
+
+const maxPhotoCount = 6
+const maxPhotoSizeBytes = 8 * 1024 * 1024
+const acceptedPhotoTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'])
+const acceptedPhotoExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif'])
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:5087').replace(/\/$/, '')
 const defaultLocation: LocationState = { label: 'Makati, Metro Manila', lat: 14.5653, lng: 121.0318, source: 'default' }
@@ -67,6 +75,36 @@ function apiUrl(path: string) {
 function photoUrl(url?: string) {
   if (!url) return undefined
   return url.startsWith('http') ? url : apiUrl(url)
+}
+
+function uploadIdFromPhotoUrl(url?: string) {
+  return url?.match(/\/local-photos\/([^/?#]+)/)?.[1]
+}
+
+function createDraftPhotoId() {
+  return globalThis.crypto?.randomUUID?.() ?? `photo_${Date.now()}_${Math.random().toString(16).slice(2)}`
+}
+
+function getFileExtension(fileName: string) {
+  const dotIndex = fileName.lastIndexOf('.')
+  return dotIndex >= 0 ? fileName.slice(dotIndex).toLowerCase() : ''
+}
+
+function contentTypeForPhoto(file: File) {
+  if (file.type) return file.type
+  const extension = getFileExtension(file.name)
+  if (extension === '.jpg' || extension === '.jpeg') return 'image/jpeg'
+  if (extension === '.png') return 'image/png'
+  if (extension === '.webp') return 'image/webp'
+  if (extension === '.gif') return 'image/gif'
+  if (extension === '.heic') return 'image/heic'
+  if (extension === '.heif') return 'image/heif'
+  return ''
+}
+
+function isAcceptedPhoto(file: File) {
+  const contentType = contentTypeForPhoto(file)
+  return acceptedPhotoTypes.has(contentType) || acceptedPhotoExtensions.has(getFileExtension(file.name))
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -118,7 +156,9 @@ function App() {
   const [isPublishing, setIsPublishing] = useState(false)
   const [mapError, setMapError] = useState(false)
   const [selectedPin, setSelectedPin] = useState(defaultLocation)
-  const [uploads, setUploads] = useState<UploadTicket[]>([])
+  const [draftPhotos, setDraftPhotos] = useState<DraftPhoto[]>([])
+  const draftPhotoUrlsRef = useRef<string[]>([])
+  const [publishedPhotoPreviews, setPublishedPhotoPreviews] = useState<Record<string, string>>({})
   const [uploadError, setUploadError] = useState('')
   const [managementToken, setManagementToken] = useState(getQueryToken())
   const [managedPost, setManagedPost] = useState<{ postId: string; petName: string; status: PetStatus } | null>(null)
@@ -262,17 +302,88 @@ function App() {
     setLocationModalOpen(false)
   }
 
-  async function uploadSamplePhoto() {
-    setUploadError('')
-    try {
-      const ticket = await requestJson<{ uploadId: string; displayUrl: string }>('/api/photo-uploads', {
-        method: 'POST',
-        body: JSON.stringify({ fileName: `pet-photo-${uploads.length + 1}.jpg`, contentType: 'image/jpeg', sizeBytes: 420000 }),
-      })
-      setUploads((items) => [...items, { ...ticket, fileName: `pet-photo-${itemsLabel(items.length + 1)}.jpg` }].slice(0, 6))
-    } catch (error) {
-      setUploadError((error as Error).message)
+  useEffect(() => {
+    return () => {
+      draftPhotoUrlsRef.current.forEach((url) => URL.revokeObjectURL(url))
     }
+  }, [])
+
+  function addDraftPhotos(files: FileList | File[]) {
+    setUploadError('')
+    const selectedFiles = Array.from(files)
+    if (selectedFiles.length === 0) return
+
+    setDraftPhotos((current) => {
+      const availableSlots = maxPhotoCount - current.length
+      const accepted: DraftPhoto[] = []
+      const rejected: string[] = []
+
+      selectedFiles.slice(0, Math.max(availableSlots, 0)).forEach((file) => {
+        if (!isAcceptedPhoto(file)) {
+          rejected.push(`${file.name} is not a supported image type.`)
+          return
+        }
+
+        if (file.size <= 0 || file.size > maxPhotoSizeBytes) {
+          rejected.push(`${file.name} must be between 1 byte and 8 MB.`)
+          return
+        }
+
+        const previewUrl = URL.createObjectURL(file)
+        draftPhotoUrlsRef.current.push(previewUrl)
+        accepted.push({
+          id: createDraftPhotoId(),
+          file,
+          fileName: file.name,
+          contentType: contentTypeForPhoto(file),
+          sizeBytes: file.size,
+          previewUrl,
+        })
+      })
+
+      if (selectedFiles.length > availableSlots) {
+        rejected.push(`Only ${maxPhotoCount} photos can be added.`)
+      }
+
+      if (rejected.length > 0) {
+        setUploadError(rejected.join(' '))
+      }
+
+      return [...current, ...accepted]
+    })
+  }
+
+  function removeDraftPhoto(photoId: string) {
+    setDraftPhotos((current) => {
+      const photo = current.find((item) => item.id === photoId)
+      if (photo) {
+        URL.revokeObjectURL(photo.previewUrl)
+        draftPhotoUrlsRef.current = draftPhotoUrlsRef.current.filter((url) => url !== photo.previewUrl)
+      }
+      return current.filter((item) => item.id !== photoId)
+    })
+  }
+
+  async function createUploadTickets(photos: DraftPhoto[]) {
+    const uploadIds: string[] = []
+    const previewByUploadId: Record<string, string> = {}
+
+    for (const photo of photos) {
+      const ticket = await requestJson<{ uploadId: string }>('/api/photo-uploads', {
+        method: 'POST',
+        body: JSON.stringify({ fileName: photo.fileName, contentType: photo.contentType, sizeBytes: photo.sizeBytes }),
+      })
+      uploadIds.push(ticket.uploadId)
+      previewByUploadId[ticket.uploadId] = photo.previewUrl
+    }
+
+    setPublishedPhotoPreviews((current) => ({ ...current, ...previewByUploadId }))
+    return uploadIds
+  }
+
+  function resolvePhotoUrl(url?: string) {
+    const uploadId = uploadIdFromPhotoUrl(url)
+    return uploadId && publishedPhotoPreviews[uploadId] ? publishedPhotoPreviews[uploadId] : photoUrl(url)
   }
 
   function updatePin(placeLabel: string) {
@@ -288,7 +399,7 @@ function App() {
     const accessories = String(data.get('accessories') ?? '').trim()
     const features = String(data.get('features') ?? '').trim()
 
-    if (!petName || !features || uploads.length === 0) {
+    if (!petName || !features || draftPhotos.length === 0) {
       setCreateError('Pet name, defining features, and at least one uploaded photo are required.')
       setCreateMessage('')
       return
@@ -296,7 +407,9 @@ function App() {
 
     setIsPublishing(true)
     setCreateError('')
+    setUploadError('')
     try {
+      const photoUploadIds = await createUploadTickets(draftPhotos)
       const result = await requestJson<{ postId: string; managementToken: string; managementUrl: string }>('/api/posts', {
         method: 'POST',
         body: JSON.stringify({
@@ -305,7 +418,7 @@ function App() {
           accessories,
           definingFeatures: features,
           lastSeen: { lat: selectedPin.lat, lng: selectedPin.lng, humanReadable: selectedPin.label },
-          photoUploadIds: uploads.map((upload) => upload.uploadId),
+          photoUploadIds,
           contactPreference: { allowMessages: true },
         }),
       })
@@ -388,18 +501,20 @@ function App() {
             onSortChange={setSort}
             onNavigate={navigate}
             onReport={(id) => openReport('Post', id, 'post')}
+            resolvePhotoUrl={resolvePhotoUrl}
           />
         )}
         {isCreate && (
           <CreatePostSurface
-            uploads={uploads}
+            draftPhotos={draftPhotos}
             createMessage={createMessage}
             createError={createError}
             uploadError={uploadError}
             mapError={mapError}
             selectedPin={selectedPin}
             isPublishing={isPublishing}
-            onUpload={uploadSamplePhoto}
+            onPhotosSelected={addDraftPhotos}
+            onRemovePhoto={removeDraftPhoto}
             onSubmit={submitCreate}
             onCancel={() => navigate('/')}
             onToggleMapError={() => setMapError((value) => !value)}
@@ -421,6 +536,7 @@ function App() {
             onMessage={() => setModal('message')}
             onManage={() => navigate(`/posts/${activePostId}/manage${managementToken ? `?token=${encodeURIComponent(managementToken)}` : ''}`)}
             onReport={openReport}
+            resolvePhotoUrl={resolvePhotoUrl}
           />
         )}
         {isManage && (
@@ -452,10 +568,6 @@ function App() {
   )
 }
 
-function itemsLabel(index: number) {
-  return String(index).padStart(2, '0')
-}
-
 function FeedSurface(props: {
   posts: FeedPost[]
   location: LocationState
@@ -471,6 +583,7 @@ function FeedSurface(props: {
   onSortChange: (value: string) => void
   onNavigate: (path: string) => void
   onReport: (postId: string) => void
+  resolvePhotoUrl: (url?: string) => string | undefined
 }) {
   return (
     <section className="feed-shell" aria-label="Nearby missing pets feed">
@@ -522,7 +635,7 @@ function FeedSurface(props: {
           {props.state !== 'loading' && props.posts.length === 0 && <StatusPanel title="No matching nearby posts" text="Try a wider radius or a different pet type." />}
           {props.posts.map((post) => (
             <article className="pet-card" key={post.id}>
-              <PetPhoto label={`${post.petType} photo`} src={photoUrl(post.primaryPhotoUrl)} />
+              <PetPhoto label={`${post.petType} photo`} src={props.resolvePhotoUrl(post.primaryPhotoUrl)} />
               <div>
                 <div className="card-head">
                   <h2>{post.petName}</h2>
@@ -554,27 +667,54 @@ function FeedSurface(props: {
 }
 
 function CreatePostSurface(props: {
-  uploads: UploadTicket[]
+  draftPhotos: DraftPhoto[]
   createMessage: string
   createError: string
   uploadError: string
   mapError: boolean
   selectedPin: LocationState
   isPublishing: boolean
-  onUpload: () => void
+  onPhotosSelected: (files: FileList) => void
+  onRemovePhoto: (photoId: string) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onCancel: () => void
   onToggleMapError: () => void
   onPinChange: (label: string) => void
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function openFilePicker() {
+    fileInputRef.current?.click()
+  }
+
+  function selectPhotos(files: FileList | null) {
+    if (!files) return
+    props.onPhotosSelected(files)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   return (
     <form className="form-panel" onSubmit={props.onSubmit} aria-label="Create missing pet post">
       <h1>Create missing-pet post</h1>
       <p>Anonymous posting is supported. Save the private management code shown after publishing.</p>
       <div className="upload-grid">
-        {props.uploads.map((upload) => <PetPhoto key={upload.uploadId} label={upload.fileName} src={photoUrl(upload.displayUrl)} />)}
-        {props.uploads.length < 6 && <button className="upload-tile" type="button" onClick={props.onUpload}>Add sample pet photo</button>}
+        {props.draftPhotos.map((photo) => (
+          <div className="draft-photo" key={photo.id}>
+            <PetPhoto label={photo.fileName} src={photo.previewUrl} />
+            <button className="ghost fit" type="button" onClick={() => props.onRemovePhoto(photo.id)}>Remove</button>
+          </div>
+        ))}
+        {props.draftPhotos.length < maxPhotoCount && <button className="upload-tile" type="button" onClick={openFilePicker}>Upload pet photo</button>}
       </div>
+      <input
+        ref={fileInputRef}
+        className="visually-hidden"
+        type="file"
+        accept="image/*,.heic,.heif"
+        multiple
+        onChange={(event) => selectPhotos(event.target.files)}
+        aria-label="Choose pet photos"
+      />
       {props.uploadError && <p className="error-text">{props.uploadError}</p>}
       <div className="form-grid">
         <label>
@@ -638,6 +778,7 @@ function PostDetailSurface(props: {
   onMessage: () => void
   onManage: () => void
   onReport: (type: 'Post' | 'Comment' | 'Message', id: string, label: string) => void
+  resolvePhotoUrl: (url?: string) => string | undefined
 }) {
   if (props.state === 'loading') return <StatusPanel title="Loading post" text="Fetching the report and comments." />
   if (props.state === 'error' || !props.post) return <StatusPanel title="Post unavailable" text={props.error || 'This post could not be found.'} danger />
@@ -648,7 +789,7 @@ function PostDetailSurface(props: {
       <article className="detail-main">
         <button className="ghost fit" type="button" onClick={props.onBack}>Back to feed</button>
         <div className="gallery">
-          {post.photos.map((photo) => <PetPhoto key={photo.id} label="Pet photo" src={photoUrl(photo.displayUrl)} />)}
+          {post.photos.map((photo) => <PetPhoto key={photo.id} label="Pet photo" src={props.resolvePhotoUrl(photo.displayUrl)} />)}
         </div>
         <div className="card-head">
           <div>

@@ -108,9 +108,22 @@ public sealed class MissingPetsApiIntegrationTests
     }
 
     [Test]
+    public async Task CreatePhotoUpload_AcceptsCommonAndPhoneImageMetadata()
+    {
+        var gifResponse = await _client.PostAsJsonAsync("/api/photo-uploads", new PhotoUploadRequest("luna.gif", "image/gif", 100));
+        var heicResponse = await _client.PostAsJsonAsync("/api/photo-uploads", new PhotoUploadRequest("luna.heic", "image/heic", 100));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(gifResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(heicResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        });
+    }
+
+    [Test]
     public async Task CreatePhotoUpload_RejectsInvalidMetadata()
     {
-        var response = await _client.PostAsJsonAsync("/api/photo-uploads", new PhotoUploadRequest("luna.gif", "image/gif", 100));
+        var response = await _client.PostAsJsonAsync("/api/photo-uploads", new PhotoUploadRequest("luna.pdf", "application/pdf", 100));
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }

@@ -1,6 +1,20 @@
 import { expect, test } from '@playwright/test'
 
+const petPhoto = {
+  name: 'luna.png',
+  mimeType: 'image/png',
+  buffer: Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+    'base64',
+  ),
+}
+
 test('phase 5 API-backed missing pet journey', async ({ page }) => {
+  let photoUploadRequests = 0
+  page.on('request', (request) => {
+    if (request.url().includes('/api/photo-uploads')) photoUploadRequests += 1
+  })
+
   await page.goto('/')
 
   await expect(page.getByRole('dialog', { name: 'Location permission' })).toBeVisible()
@@ -10,8 +24,9 @@ test('phase 5 API-backed missing pet journey', async ({ page }) => {
   await page.getByRole('button', { name: 'Post missing pet' }).click()
   await expect(page.getByRole('heading', { name: 'Create missing-pet post' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Add sample pet photo' }).click()
-  await expect(page.getByText('pet-photo-01.jpg')).toBeVisible()
+  await page.getByLabel('Choose pet photos').setInputFiles(petPhoto)
+  await expect(page.getByText('luna.png')).toBeVisible()
+  expect(photoUploadRequests).toBe(0)
 
   await page.getByLabel('Pet name').fill('Phase Five Luna')
   await page.getByLabel('Pet type').selectOption('Dog')
@@ -23,9 +38,11 @@ test('phase 5 API-backed missing pet journey', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Publish post' }).click()
   await expect(page.getByText('Published. Private management link:')).toBeVisible()
+  expect(photoUploadRequests).toBe(1)
   await page.waitForURL(/\/posts\/[0-9a-f-]+$/)
 
   await expect(page.getByRole('heading', { name: 'Phase Five Luna' })).toBeVisible()
+  await expect(page.getByRole('img', { name: 'Pet photo' }).first()).toHaveAttribute('src', /^blob:/)
   await expect(page.getByText('last seen approx.')).toBeVisible()
   await expect(page.getByText('Exact coordinates are used for search.')).toBeVisible()
   await expect(page.locator('body')).not.toContainText('14.5503')
@@ -64,4 +81,5 @@ test('phase 5 API-backed missing pet journey', async ({ page }) => {
   await page.getByLabel('Status').selectOption('Found')
   await page.getByLabel('Sort').selectOption('Newest')
   await expect(page.getByRole('heading', { name: 'Phase Five Luna' }).first()).toBeVisible()
+  await expect(page.getByRole('img', { name: 'Dog photo' }).first()).toHaveAttribute('src', /^blob:/)
 })

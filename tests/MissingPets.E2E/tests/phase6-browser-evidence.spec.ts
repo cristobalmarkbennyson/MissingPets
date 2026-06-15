@@ -1,6 +1,14 @@
 import { expect, test } from '@playwright/test'
 
 const evidenceDir = '../../docs/exec-plans/active'
+const petPhoto = {
+  name: 'maple.png',
+  mimeType: 'image/png',
+  buffer: Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+    'base64',
+  ),
+}
 
 test('phase 6 captures desktop and mobile browser evidence', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 })
@@ -11,7 +19,7 @@ test('phase 6 captures desktop and mobile browser evidence', async ({ page }) =>
 
   await page.getByRole('button', { name: 'Post missing pet' }).click()
   await page.screenshot({ path: `${evidenceDir}/phase6-create-empty-desktop.png`, fullPage: true })
-  await page.getByRole('button', { name: 'Add sample pet photo' }).click()
+  await page.getByLabel('Choose pet photos').setInputFiles(petPhoto)
   await page.getByLabel('Pet name').fill('Phase Six Maple')
   await page.getByLabel('Pet type').selectOption('Cat')
   await page.getByLabel('Accessories').fill('Green collar')
@@ -43,7 +51,7 @@ test('phase 6 captures desktop and mobile browser evidence', async ({ page }) =>
   await page.screenshot({ path: `${evidenceDir}/phase6-create-mobile.png`, fullPage: true })
   await page.goBack()
   await page.getByRole('button', { name: 'Post missing pet' }).click()
-  await page.getByRole('button', { name: 'Add sample pet photo' }).click()
+  await page.getByLabel('Choose pet photos').setInputFiles({ ...petPhoto, name: 'mobile.png' })
   await page.getByLabel('Pet name').fill('Phase Six Mobile')
   await page.getByLabel('Defining features').fill('Small dog with black ears and a blue leash.')
   await page.getByRole('button', { name: 'Publish post' }).click()

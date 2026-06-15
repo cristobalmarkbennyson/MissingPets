@@ -388,7 +388,8 @@ main {
   gap: 10px;
 }
 
-.upload-grid div,
+.upload-grid > .pet-photo,
+.draft-photo,
 .upload-tile {
   min-height: 118px;
   display: grid;
@@ -404,6 +405,26 @@ main {
 
 .upload-tile {
   width: 100%;
+}
+
+.draft-photo {
+  gap: 8px;
+  padding: 8px;
+}
+
+.draft-photo .pet-photo {
+  width: 100%;
+  min-height: 118px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .map-section {

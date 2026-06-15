@@ -15,7 +15,10 @@ public sealed class LocalPhotoStorageService : IPhotoStorageService
     {
         "image/jpeg",
         "image/png",
-        "image/webp"
+        "image/webp",
+        "image/gif",
+        "image/heic",
+        "image/heif"
     };
 
     private const long MaxFileSizeBytes = 8 * 1024 * 1024;
@@ -29,7 +32,7 @@ public sealed class LocalPhotoStorageService : IPhotoStorageService
 
         if (!AllowedContentTypes.Contains(descriptor.ContentType))
         {
-            throw new PhotoUploadValidationException("Photo content type must be image/jpeg, image/png, or image/webp.");
+            throw new PhotoUploadValidationException("Photo content type must be image/jpeg, image/png, image/webp, image/gif, image/heic, or image/heif.");
         }
 
         if (descriptor.SizeBytes <= 0 || descriptor.SizeBytes > MaxFileSizeBytes)
