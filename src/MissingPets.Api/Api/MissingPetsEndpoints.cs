@@ -79,11 +79,37 @@ public static class MissingPetsEndpoints
         return Results.Ok(new FeedResponse(items));
     }
 
-    private static IResult CreatePhotoUpload(PhotoUploadRequest request, IPhotoStorageService storage)
+    private static async Task<IResult> CreatePhotoUpload(HttpRequest request, IPhotoStorageService storage, CancellationToken cancellationToken)
     {
         try
         {
-            var ticket = storage.CreateUpload(new PhotoUploadDescriptor(request.FileName, request.ContentType, request.SizeBytes));
+            PhotoUploadTicket ticket;
+            if (request.HasFormContentType)
+            {
+                var form = await request.ReadFormAsync(cancellationToken);
+                var file = form.Files.GetFile("file");
+                if (file is null)
+                {
+                    return Results.BadRequest(new { error = "Photo file is required." });
+                }
+
+                await using var stream = file.OpenReadStream();
+                ticket = await storage.StoreUploadAsync(
+                    new PhotoUploadDescriptor(file.FileName, file.ContentType, file.Length),
+                    stream,
+                    cancellationToken);
+            }
+            else
+            {
+                var uploadRequest = await request.ReadFromJsonAsync<PhotoUploadRequest>(cancellationToken);
+                if (uploadRequest is null)
+                {
+                    return Results.BadRequest(new { error = "Photo upload metadata is required." });
+                }
+
+                ticket = storage.CreateUpload(new PhotoUploadDescriptor(uploadRequest.FileName, uploadRequest.ContentType, uploadRequest.SizeBytes));
+            }
+
             return Results.Ok(new PhotoUploadResponse(ticket.UploadId, ticket.ObjectKey, ticket.DisplayUrl));
         }
         catch (PhotoUploadValidationException ex)

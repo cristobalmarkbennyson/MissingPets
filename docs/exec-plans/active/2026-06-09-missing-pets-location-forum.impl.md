@@ -39,6 +39,17 @@
   - `npm run build` in `src/MissingPets.Web` - Pass.
   - `npm test` in `tests/MissingPets.E2E` - Pass, 2 Playwright tests. The Phase 5 journey now asserts that the detail gallery and feed card image `src` values are `blob:` URLs after publishing.
 
+### Follow-Up Execution - Durable Local Photo Storage
+
+- Date: `2026-06-15`
+- Scope: Fix selected photos disappearing after the temporary browser preview URL expires.
+- Outcome: `/api/photo-uploads` now accepts multipart file uploads, stores local development photo bytes under the API output folder, and `/local-photos/{uploadId}` serves the stored file when present before falling back to the SVG placeholder for legacy metadata-only tickets. The frontend now uploads actual `File` objects at publish time instead of JSON-only metadata.
+- Files Changed: `src/MissingPets.Api/Api/MissingPetsEndpoints.cs`, `src/MissingPets.Api/Program.cs`, `src/MissingPets.Api/Storage/PhotoStorageService.cs`, `src/MissingPets.Api.Tests/Api/MissingPetsApiIntegrationTests.cs`, `src/MissingPets.Web/src/App.tsx`, `tests/MissingPets.E2E/tests/phase5-integration.spec.ts`.
+- Verification:
+  - `npm run build` in `src/MissingPets.Web` - Pass.
+  - `dotnet test MissingPets.sln -c Release` - Pass, 15 backend tests including multipart upload storage and retrieval.
+  - Playwright not rerun for this final durable-storage patch because pre-existing servers on ports `5087` and `5173` would be reused; the running API must be restarted to pick up the new multipart endpoint before browser verification.
+
 ## Active Phase Lock
 
 - Active Phase: None; all plan phases complete.

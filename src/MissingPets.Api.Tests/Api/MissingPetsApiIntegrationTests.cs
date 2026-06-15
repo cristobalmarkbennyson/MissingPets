@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -117,6 +118,30 @@ public sealed class MissingPetsApiIntegrationTests
         {
             Assert.That(gifResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(heicResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        });
+    }
+
+    [Test]
+    public async Task CreatePhotoUpload_StoresMultipartImageFile()
+    {
+        var bytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=");
+        using var form = new MultipartFormDataContent();
+        using var content = new ByteArrayContent(bytes);
+        content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(content, "file", "luna.png");
+
+        var uploadResponse = await _client.PostAsync("/api/photo-uploads", form);
+        Assert.That(uploadResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        var upload = await uploadResponse.Content.ReadFromJsonAsync<PhotoUploadResponse>();
+
+        var photoResponse = await _client.GetAsync(upload!.DisplayUrl);
+        var storedBytes = await photoResponse.Content.ReadAsByteArrayAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(photoResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(photoResponse.Content.Headers.ContentType!.MediaType, Is.EqualTo("image/png"));
+            Assert.That(storedBytes, Is.EqualTo(bytes));
         });
     }
 

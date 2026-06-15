@@ -74,10 +74,6 @@ function photoUrl(url?: string) {
   return url.startsWith('http') ? url : apiUrl(url)
 }
 
-function uploadIdFromPhotoUrl(url?: string) {
-  return url?.match(/\/local-photos\/([^/?#]+)/)?.[1]
-}
-
 function createDraftPhotoId() {
   return globalThis.crypto?.randomUUID?.() ?? `photo_${Date.now()}_${Math.random().toString(16).slice(2)}`
 }
@@ -156,7 +152,6 @@ function App() {
   const [pinConfirmed, setPinConfirmed] = useState(false)
   const [draftPhotos, setDraftPhotos] = useState<DraftPhoto[]>([])
   const draftPhotoUrlsRef = useRef<string[]>([])
-  const [publishedPhotoPreviews, setPublishedPhotoPreviews] = useState<Record<string, string>>({})
   const [uploadError, setUploadError] = useState('')
   const [managementToken, setManagementToken] = useState(getQueryToken())
   const [managedPost, setManagedPost] = useState<{ postId: string; petName: string; status: PetStatus } | null>(null)
@@ -364,24 +359,30 @@ function App() {
 
   async function createUploadTickets(photos: DraftPhoto[]) {
     const uploadIds: string[] = []
-    const previewByUploadId: Record<string, string> = {}
 
     for (const photo of photos) {
-      const ticket = await requestJson<{ uploadId: string }>('/api/photo-uploads', {
+      const formData = new FormData()
+      formData.append('file', photo.file, photo.fileName)
+
+      const response = await fetch(apiUrl('/api/photo-uploads'), {
         method: 'POST',
-        body: JSON.stringify({ fileName: photo.fileName, contentType: photo.contentType, sizeBytes: photo.sizeBytes }),
+        body: formData,
       })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `Photo upload failed with ${response.status}`)
+      }
+
+      const ticket = (await response.json()) as { uploadId: string }
       uploadIds.push(ticket.uploadId)
-      previewByUploadId[ticket.uploadId] = photo.previewUrl
     }
 
-    setPublishedPhotoPreviews((current) => ({ ...current, ...previewByUploadId }))
     return uploadIds
   }
 
   function resolvePhotoUrl(url?: string) {
-    const uploadId = uploadIdFromPhotoUrl(url)
-    return uploadId && publishedPhotoPreviews[uploadId] ? publishedPhotoPreviews[uploadId] : photoUrl(url)
+    return photoUrl(url)
   }
 
   function updatePin(pin: LocationState) {

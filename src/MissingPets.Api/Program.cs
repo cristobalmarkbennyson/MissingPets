@@ -74,7 +74,27 @@ app.MapGet("/health", (
 })
 .WithName("Health")
 .WithOpenApi();
-app.MapGet("/local-photos/{uploadId}", (string uploadId) =>
+app.MapGet("/local-photos/{uploadId}", (string uploadId, IPhotoStorageService storage) =>
+{
+    if (storage.TryGetStoredPhoto(uploadId, out var filePath, out var contentType))
+    {
+        return Results.File(filePath, contentType);
+    }
+
+    return LocalPhotoPlaceholder(uploadId);
+});
+app.MapGet("/local-photos/{uploadId}/{fileName}", (string uploadId, string fileName, IPhotoStorageService storage) =>
+{
+    if (storage.TryGetStoredPhoto(uploadId, out var filePath, out var contentType))
+    {
+        return Results.File(filePath, contentType);
+    }
+
+    return LocalPhotoPlaceholder(uploadId);
+});
+app.MapMissingPetsApi();
+
+static IResult LocalPhotoPlaceholder(string uploadId)
 {
     var safeLabel = System.Net.WebUtility.HtmlEncode(uploadId.Length > 8 ? uploadId[..8] : uploadId);
     var svg = $$"""
@@ -94,8 +114,7 @@ app.MapGet("/local-photos/{uploadId}", (string uploadId) =>
         """;
 
     return Results.Text(svg, "image/svg+xml");
-});
-app.MapMissingPetsApi();
+}
 
 app.Run();
 
