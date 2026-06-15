@@ -3,6 +3,7 @@ import type { CSSProperties, FormEvent } from 'react'
 import './App.css'
 import { LastSeenMapPicker } from './maps/LastSeenMapPicker'
 import type { LastSeenPin } from './maps/mapTypes'
+import { requestBrowserLocation } from './location/browserLocation'
 
 type PetStatus = 'Missing' | 'Found'
 type ModalState = 'message' | 'report' | null
@@ -265,27 +266,18 @@ function App() {
     setModal('report')
   }
 
-  function allowBrowserLocation() {
-    if (!navigator.geolocation) {
-      setPermissionState('Browser geolocation is unsupported. Choose manually.')
+  async function allowBrowserLocation() {
+    setPermissionState('Requesting browser location...')
+    const result = await requestBrowserLocation()
+
+    if (!result.ok) {
+      setPermissionState(result.message)
       return
     }
 
-    setPermissionState('Requesting browser location...')
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          label: 'Your current area',
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          source: 'browser',
-        })
-        setPermissionState('Location granted.')
-        setLocationModalOpen(false)
-      },
-      () => setPermissionState('Location denied. Choose manually to keep browsing.'),
-      { enableHighAccuracy: false, timeout: 7000 },
-    )
+    setLocation(result.location)
+    setPermissionState(result.reverseGeocoded ? 'Location granted.' : 'Location granted. Address lookup unavailable, using coordinates.')
+    setLocationModalOpen(false)
   }
 
   function useManualLocation() {
