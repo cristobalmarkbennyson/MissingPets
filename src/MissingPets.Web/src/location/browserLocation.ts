@@ -53,7 +53,8 @@ function getCurrentPosition(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject: (error: GeolocationPositionError) => void) => {
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy: false,
-      timeout: 7000,
+      maximumAge: 5 * 60 * 1000,
+      timeout: 20000,
     })
   })
 }

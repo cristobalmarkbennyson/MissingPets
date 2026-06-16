@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import './App.css'
 import { LastSeenMapPicker } from './maps/LastSeenMapPicker'
@@ -151,8 +151,10 @@ function App() {
   const [mapError, setMapError] = useState(false)
   const [selectedPin, setSelectedPin] = useState(defaultLocation)
   const [pinConfirmed, setPinConfirmed] = useState(false)
+  const [pinTouched, setPinTouched] = useState(false)
   const [draftPhotos, setDraftPhotos] = useState<DraftPhoto[]>([])
   const draftPhotoUrlsRef = useRef<string[]>([])
+  const wasCreateRef = useRef(false)
   const [uploadError, setUploadError] = useState('')
   const [managementToken, setManagementToken] = useState(getQueryToken())
   const [managedPost, setManagedPost] = useState<{ postId: string; petName: string; status: PetStatus } | null>(null)
@@ -164,6 +166,24 @@ function App() {
   const isCreate = path === '/posts/new'
   const isManage = /^\/posts\/[^/]+\/manage$/.test(path)
   const isDetail = /^\/posts\/[^/]+$/.test(path) && path !== '/posts/new' && !isManage
+
+  useLayoutEffect(() => {
+    const wasCreate = wasCreateRef.current
+    wasCreateRef.current = isCreate
+
+    if (!isCreate) return
+
+    if (!wasCreate) {
+      setSelectedPin(location)
+      setPinConfirmed(false)
+      setPinTouched(false)
+      return
+    }
+
+    if (!pinTouched && !pinConfirmed) {
+      setSelectedPin(location)
+    }
+  }, [isCreate, location, pinConfirmed, pinTouched])
 
   useEffect(() => {
     window.onpopstate = () => {
@@ -233,6 +253,11 @@ function App() {
     const queryToken = getQueryToken()
     if (queryToken) setManagementToken(queryToken)
     if (nextPath === '/') setLocationModalOpen(false)
+    if (nextPath === '/posts/new') {
+      setSelectedPin(location)
+      setPinConfirmed(false)
+      setPinTouched(false)
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -380,11 +405,13 @@ function App() {
   function updatePin(pin: LocationState) {
     setSelectedPin(pin)
     setPinConfirmed(false)
+    setPinTouched(true)
   }
 
   function confirmPin(pin: LocationState) {
     setSelectedPin(pin)
     setPinConfirmed(true)
+    setPinTouched(true)
   }
 
   async function submitCreate(event: FormEvent<HTMLFormElement>) {
